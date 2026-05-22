@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "606452568389",
+    "project_id": "p-comic",
+    "storage_bucket": "p-comic.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606452568389:android:1d3e7f302fd5aeb07a6e2c",
+        "android_client_info": {
+          "package_name": "com.example.p_comic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEU1RL9aF7PHRAyZUf50Yd4uLwFb9rD-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

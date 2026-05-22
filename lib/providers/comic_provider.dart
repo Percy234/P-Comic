@@ -32,7 +32,6 @@ class ComicProvider extends ChangeNotifier {
       currentPage = response.currentPage;
       totalItems = response.totalItems;
       totalPerPage = response.totalPerPage;
-      // Compute randomComics once when loading page 1
       if (page == 1 && !_randomized) {
         final Map<String, Comic> uniqueMap = {};
         for (final comic in pagedComics) {

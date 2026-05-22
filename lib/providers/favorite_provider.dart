@@ -25,19 +25,27 @@ class FavoriteProvider extends ChangeNotifier {
     required String slug,
     required String thumbUrl,
   }) async {
-    if (isFavorite) {
-      await _db.removeFavorite(comicId);
-      isFavorite = false;
-    } else {
-      await _db.insertFavoriteData(
-        comicId: comicId,
-        name: name,
-        slug: slug,
-        thumbUrl: thumbUrl,
-      );
-      isFavorite = true;
-    }
-    await loadFavorites();
+    final previous = isFavorite;
+    // optimistic update: update UI immediately
+    isFavorite = !previous;
     notifyListeners();
+    try {
+      if (previous) {
+        await _db.removeFavorite(comicId);
+      } else {
+        await _db.insertFavoriteData(
+          comicId: comicId,
+          name: name,
+          slug: slug,
+          thumbUrl: thumbUrl,
+        );
+      }
+      // refresh favorites in background (don't block UI)
+      loadFavorites();
+    } catch (e) {
+      // rollback on error
+      isFavorite = previous;
+      notifyListeners();
+    }
   }
 }

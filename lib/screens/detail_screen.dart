@@ -38,8 +38,9 @@ class _DetailScreenState extends State<DetailScreen> {
       appBar: AppBar(
         title: Text(widget.comic.name), 
         actions: [
-          Consumer<FavoriteProvider>(
-            builder: (context, favoriteProvider, _) {
+          Builder(
+            builder: (context) {
+              final favoriteProvider = context.watch<FavoriteProvider>();
               return IconButton(
                 onPressed: () async {
                   await favoriteProvider.toggleFavorite(
