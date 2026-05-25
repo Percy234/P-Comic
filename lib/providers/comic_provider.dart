@@ -39,7 +39,7 @@ class ComicProvider extends ChangeNotifier {
         }
         final uniqueList = uniqueMap.values.toList();
         uniqueList.shuffle();
-        randomComics = uniqueList.take(6).toList();
+        randomComics = uniqueList.take(10).toList();
         _randomized = true;
       }
     } catch (e) {

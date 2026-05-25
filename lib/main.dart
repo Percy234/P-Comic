@@ -11,15 +11,13 @@ import 'providers/comic_provider.dart';
 import 'providers/detail_provider.dart';
 import 'providers/reading_provider.dart';
 import 'providers/favorite_provider.dart';
-import 'screens/home_screen.dart';
+import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
-import 'screens/login_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (kIsWeb) {
     databaseFactory = databaseFactoryFfiWeb;
@@ -28,21 +26,12 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => ComicProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => DetailProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ReadingProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => FavoriteProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => ComicProvider()),
+        ChangeNotifierProvider(create: (_) => DetailProvider()),
+        ChangeNotifierProvider(create: (_) => ReadingProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: const MyApp(),
     ),
@@ -56,10 +45,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'P Comic',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const LoginScreen(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const MainShell(),
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart';
+import 'main_shell.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,11 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Đăng nhập'),
-      ),
+      appBar: AppBar(title: const Text('Đăng nhập')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0), 
+        padding: const EdgeInsets.all(16.0),
         child: Consumer<AuthProvider>(
           builder: (context, auth, child) {
             return Column(
@@ -30,33 +28,45 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 TextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
 
                 const SizedBox(height: 16),
 
                 TextField(
                   controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Mật khẩu', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Mật khẩu',
+                    border: OutlineInputBorder(),
+                  ),
                   obscureText: true,
                 ),
 
                 const SizedBox(height: 16),
 
                 ElevatedButton(
-                  onPressed: auth.isLoading ? null : () async {
-                    final success = await auth.login(
-                      email: emailController.text.trim(),
-                      password: passwordController.text.trim()
-                    );
-                    if (success && context.mounted) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      );
-                    }
-                  },
-                  child: auth.isLoading ? const CircularProgressIndicator() : const Text('Đăng nhập'),
+                  onPressed: auth.isLoading
+                      ? null
+                      : () async {
+                          final success = await auth.login(
+                            email: emailController.text.trim(),
+                            password: passwordController.text.trim(),
+                          );
+                          if (success && context.mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MainShell(),
+                              ),
+                            );
+                          }
+                        },
+                  child: auth.isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('Đăng nhập'),
                 ),
 
                 const SizedBox(height: 16),
@@ -66,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     auth.errorMessage!,
                     style: const TextStyle(color: Colors.red),
                   ),
-                
+
                 const Spacer(),
 
                 TextButton(
@@ -77,12 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     );
                   },
                   child: const Text('Chưa có tài khoản? Đăng ký ngay'),
-                )
+                ),
               ],
             );
-          }
+          },
         ),
-      )
+      ),
     );
   }
 }

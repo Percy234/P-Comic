@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../providers/favorite_provider.dart';
+import '../providers/history_provider.dart';
 import '../models/comic_model.dart';
 import '../providers/detail_provider.dart';
 import 'reading_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final Comic comic;
-  const DetailScreen({
-    super.key,
-    required this.comic,
-  });
+  const DetailScreen({super.key, required this.comic});
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -22,21 +20,26 @@ class _DetailScreenState extends State<DetailScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context
-          .read<DetailProvider>()
-          .loadDetail(widget.comic.slug);
+      context.read<DetailProvider>().loadDetail(widget.comic.slug);
     });
     Future.microtask(() {
-      context
-          .read<FavoriteProvider>()
-          .checkFavorite(widget.comic.id);
+      context.read<FavoriteProvider>().checkFavorite(widget.comic.id);
+    });
+    Future.microtask(() {
+      context.read<HistoryProvider>().recordHistory(
+        comicId: widget.comic.id,
+        name: widget.comic.name,
+        slug: widget.comic.slug,
+        thumbUrl: widget.comic.thumbUrl,
+      );
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.comic.name), 
+        title: Text(widget.comic.name),
         actions: [
           Builder(
             builder: (context) {
@@ -51,26 +54,24 @@ class _DetailScreenState extends State<DetailScreen> {
                   );
                 },
                 icon: Icon(
-                  favoriteProvider.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  favoriteProvider.isFavorite
+                      ? Icons.favorite
+                      : Icons.favorite_border,
                   color: favoriteProvider.isFavorite ? Colors.red : null,
                 ),
               );
-            }
-          )
+            },
+          ),
         ],
       ),
       body: Consumer<DetailProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           final comic = provider.comicDetail;
           if (comic == null) {
-            return const Center(
-              child: Text('Không có dữ liệu'),
-            );
+            return const Center(child: Text('Không có dữ liệu'));
           }
           return SingleChildScrollView(
             child: Column(
@@ -123,24 +124,23 @@ class _DetailScreenState extends State<DetailScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => ReadingScreen(
-                                      apiUrl: chapter.apiData,
-                                    ),
+                                    builder: (_) =>
+                                        ReadingScreen(apiUrl: chapter.apiData),
                                   ),
                                 );
                               },
-                              trailing: const Icon(Icons.arrow_forward_ios) ,
+                              trailing: const Icon(Icons.arrow_forward_ios),
                             ),
                           );
-                        }
-                      )
+                        },
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
