@@ -12,6 +12,8 @@ import 'providers/detail_provider.dart';
 import 'providers/reading_provider.dart';
 import 'providers/favorite_provider.dart';
 import 'screens/home_screen.dart';
+import 'providers/auth_provider.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +40,9 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => FavoriteProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -54,7 +59,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
     );
   }
 }
