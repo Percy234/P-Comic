@@ -7,6 +7,8 @@ class ComicProvider extends ChangeNotifier {
   List<Comic> homeComics = [];
   List<Comic> pagedComics = [];
   List<Comic> randomComics = [];
+  // cache latest chapter name by comic slug
+  final Map<String, String> latestChapterNames = {};
   bool _randomized = false;
   bool isLoading = false;
   int currentPage = 1;
@@ -47,5 +49,41 @@ class ComicProvider extends ChangeNotifier {
     }
     isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> loadLatestChapter(String slug) async {
+    if (latestChapterNames.containsKey(slug) && latestChapterNames[slug]!.isNotEmpty) return;
+    try {
+      final detail = await _apiService.fetchComicDetail(slug);
+      String latest = '';
+      if (detail.chapters.isNotEmpty) {
+        // Prefer chapter with largest numeric index extracted from name
+        int? bestNum;
+        String? bestName;
+        final reg = RegExp(r"(\d+)");
+        for (final ch in detail.chapters) {
+          final m = reg.firstMatch(ch.name);
+          if (m != null) {
+            final num = int.tryParse(m.group(1)!) ?? 0;
+            if (bestNum == null || num > bestNum) {
+              bestNum = num;
+              bestName = ch.name;
+            }
+          }
+        }
+        if (bestName != null) {
+          latest = bestName;
+        } else {
+          // fallback to last chapter in list (assume chronological)
+          latest = detail.chapters.last.name;
+        }
+      }
+      latestChapterNames[slug] = latest;
+      notifyListeners();
+    } catch (e) {
+      print('Error loading latest chapter for $slug: $e');
+      latestChapterNames[slug] = '';
+      notifyListeners();
+    }
   }
 } 

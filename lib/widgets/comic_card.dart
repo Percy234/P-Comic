@@ -4,9 +4,11 @@ import '../screens/detail_screen.dart';
 
 class ComicCard extends StatelessWidget {
   final Comic comic;
+  final String? subtitle;
   const ComicCard({
     super.key,
     required this.comic,
+    this.subtitle,
   });
   @override
   Widget build(BuildContext context) {
@@ -26,15 +28,36 @@ class ComicCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Image.network(
-                comic.imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(Icons.error),
-                  );
-                },
+              child: Stack(
+                children: [
+                  Image.network(
+                    comic.imageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    // decode a smaller image to reduce memory and CPU when scrolling
+                    cacheWidth: 600,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(Icons.error),
+                      );
+                    },
+                  ),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        comic.timeAgo,
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -46,19 +69,17 @@ class ComicCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Padding(
+            if (subtitle != null && subtitle!.isNotEmpty)
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  comic.timeAgo,
+                  subtitle!,
                   style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                    color: Colors.grey[700],
+                    fontSize: 13,
                   ),
                 ),
-              )
-            ),
+              ),
             const SizedBox(height: 8),
           ],
         ),
