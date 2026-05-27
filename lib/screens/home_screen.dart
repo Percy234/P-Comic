@@ -29,6 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String _formatSubtitle(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return 'Sắp ra';
+    final match = RegExp(r'(\d+)').firstMatch(raw);
+    if (match != null) return 'Chương ${match.group(1)}';
+    return raw;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,6 +55,118 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border(
+                      left: BorderSide(width: 6, color: Color(0xFF1B5E20)),
+                      top: BorderSide(width: 1, color: Color(0xFF1B5E20)),
+                      right: BorderSide(width: 1, color: Color(0xFF1B5E20)),
+                      bottom: BorderSide(width: 1, color: Color(0xFF1B5E20)),
+                    ),
+                  ),
+                  child: const Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Lưu ý: ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.deepOrange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              'Nội dung truyện trên ứng dụng được tổng hợp từ nhiều nguồn công khai trên Internet, chỉ nhằm mục đích giải trí. Mọi bản quyền thuộc về tác giả và nhà phát hành.',
+                          style: TextStyle(fontSize: 14, color: Colors.black87),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFC62828),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment(0.4, 0.4),
+                            colors: [Color(0xFFFF8A80), Color(0xFFC62828)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: Text('Thể loại', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment(0.4, 0.4),
+                            colors: [Color(0xFF82B1FF), Color(0xFF1565C0)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: Text('Sắp ra mắt', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2E7D32),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment(0.4, 0.4),
+                            colors: [Color(0xFFA5D6A7), Color(0xFF2E7D32)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: Text('Đang phát hành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF57C00),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment(0.4, 0.4),
+                            colors: [Color(0xFFFFCC80), Color(0xFFF57C00)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: Text('Đã hoàn thành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 const Text(
                   'Truyện hay',
                   style: TextStyle(
@@ -60,35 +179,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   final featured = provider.randomComics;
                   if (featured.isEmpty) return const SizedBox.shrink();
 
-                  final leftIndex = _featuredStartIndex % featured.length;
-                  final rightIndex = (leftIndex + 1) % featured.length;
-                  final leftComic = featured[leftIndex];
-                  final rightComic = featured[rightIndex];
-
-                  String _formatSubtitle(String? raw) {
-                    if (raw == null || raw.trim().isEmpty) return 'Sắp ra';
-                    final m = RegExp(r"(\d+)").firstMatch(raw);
-                    if (m != null) return 'Chương ${m.group(1)}';
-                    return raw;
-                  }
+                  final firstIndex = _featuredStartIndex % featured.length;
+                  final secondIndex = (firstIndex + 1) % featured.length;
+                  final thirdIndex = (firstIndex + 2) % featured.length;
+                  final firstComic = featured[firstIndex];
+                  final secondComic = featured[secondIndex];
+                  final thirdComic = featured[thirdIndex];
 
                   // ensure we have latest chapter info cached for visible cards
-                  if (!provider.latestChapterNames.containsKey(leftComic.slug)) {
+                  if (!provider.latestChapterNames.containsKey(firstComic.slug)) {
                     // fire and forget
-                    Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(leftComic.slug));
+                    Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(firstComic.slug));
                   }
-                  if (!provider.latestChapterNames.containsKey(rightComic.slug)) {
-                    Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(rightComic.slug));
+                  if (!provider.latestChapterNames.containsKey(secondComic.slug)) {
+                    Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(secondComic.slug));
+                  }
+                  if (!provider.latestChapterNames.containsKey(thirdComic.slug)) {
+                    Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(thirdComic.slug));
                   }
 
                   return LayoutBuilder(
                     builder: (context, constraints) {
                       const horizontalPadding = 16.0;
                       const cardGap = 12.0;
-                      const verticalPadding = 12.0;
-                      const gridAspectRatio = 0.62;
+                      const verticalPadding = 8.0;
+                      // make cards taller by using a smaller childAspectRatio
+                      const gridAspectRatio = 0.5;
 
-                      final cardWidth = (constraints.maxWidth - horizontalPadding - cardGap) / 2;
+                      final cardWidth = (constraints.maxWidth - horizontalPadding - (cardGap * 2)) / 3;
                       final cardHeight = cardWidth / gridAspectRatio;
                       final totalHeight = cardHeight + verticalPadding;
 
@@ -105,11 +223,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.only(right: 6),
-                                        child: SizedBox(
+                                      child: SizedBox(
                                         height: cardHeight,
                                         child: ComicCard(
-                                          comic: leftComic,
-                                          subtitle: _formatSubtitle(provider.latestChapterNames[leftComic.slug]),
+                                          comic: firstComic,
+                                          subtitle: _formatSubtitle(provider.latestChapterNames[firstComic.slug]),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                                      child: SizedBox(
+                                        height: cardHeight,
+                                        child: ComicCard(
+                                          comic: secondComic,
+                                          subtitle: _formatSubtitle(provider.latestChapterNames[secondComic.slug]),
                                         ),
                                       ),
                                     ),
@@ -120,8 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: SizedBox(
                                         height: cardHeight,
                                         child: ComicCard(
-                                          comic: rightComic,
-                                          subtitle: _formatSubtitle(provider.latestChapterNames[rightComic.slug]),
+                                          comic: thirdComic,
+                                          subtitle: _formatSubtitle(provider.latestChapterNames[thirdComic.slug]),
                                         ),
                                       ),
                                     ),
@@ -179,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   );
                 }),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 const Text(
                   'Tất cả truyện',
                   style: TextStyle(
@@ -193,22 +323,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: provider.pagedComics.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.62,
+                    childAspectRatio: 0.5,
                   ),
                   itemBuilder: (context, index) {
                     final comic = provider.pagedComics[index];
                     // ensure latest chapter cached for this grid item
                     if (!provider.latestChapterNames.containsKey(comic.slug)) {
                       Future.microtask(() => context.read<ComicProvider>().loadLatestChapter(comic.slug));
-                    }
-                    String _formatSubtitle(String? raw) {
-                      if (raw == null || raw.trim().isEmpty) return 'Sắp ra';
-                      final m = RegExp(r"(\d+)").firstMatch(raw);
-                      if (m != null) return 'Chương ${m.group(1)}';
-                      return raw;
                     }
                     return ComicCard(comic: comic, subtitle: _formatSubtitle(provider.latestChapterNames[comic.slug]));
                   },

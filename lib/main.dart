@@ -45,7 +45,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'P Comic',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFFEBEBEB),
+        cardColor: const Color(0xFFEBEBEB),
+      ),
       home: const MainShell(),
     );
   }

@@ -22,66 +22,89 @@ class ComicCard extends StatelessWidget {
         );
       },
       child: Card(
-        clipBehavior: Clip.hardEdge,
-        elevation: 4,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Image.network(
-                    comic.imageUrl,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    // decode a smaller image to reduce memory and CPU when scrolling
-                    cacheWidth: 600,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(Icons.error),
-                      );
-                    },
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(6),
+        clipBehavior: Clip.none,
+        elevation: 0,
+        color: const Color(0xFFEBEBEB),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final imageHeight = constraints.maxHeight * 0.72;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: imageHeight,
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      Image.network(
+                        comic.imageUrl,
+                        width: double.infinity,
+                        height: imageHeight,
+                        fit: BoxFit.cover,
+                        cacheWidth: 600,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(Icons.error),
+                          );
+                        },
                       ),
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            comic.timeAgo,
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Center(
                       child: Text(
-                        comic.timeAgo,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        comic.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                comic.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            if (subtitle != null && subtitle!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  subtitle!,
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 13,
-                  ),
                 ),
-              ),
-            const SizedBox(height: 8),
-          ],
+                if (subtitle != null && subtitle!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Center(
+                        child: Text(
+                          subtitle!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+            );
+          },
         ),
       ),
     );
