@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
+import 'filter_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -94,73 +95,89 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFC62828),
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment(0.4, 0.4),
-                            colors: [Color(0xFFFF8A80), Color(0xFFC62828)],
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FilterScreen(filterTitle: 'Thể loại', expandGenres: true, showBottomNav: true))),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFC62828),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment(0.4, 0.4),
+                              colors: [Color(0xFFFF8A80), Color(0xFFC62828)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text('Thể loại', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: const Center(
+                            child: Text('Thể loại', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0),
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment(0.4, 0.4),
-                            colors: [Color(0xFF82B1FF), Color(0xFF1565C0)],
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FilterScreen(filterTitle: 'Thể loại', initialStatuses: const ['ongoing'], showBottomNav: true))),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1565C0),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment(0.4, 0.4),
+                              colors: [Color(0xFF82B1FF), Color(0xFF1565C0)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text('Sắp ra mắt', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: const Center(
+                            child: Text('Đang phát hành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32),
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment(0.4, 0.4),
-                            colors: [Color(0xFFA5D6A7), Color(0xFF2E7D32)],
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FilterScreen(filterTitle: 'Thể loại', initialStatuses: const ['coming_soon'], showBottomNav: true))),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment(0.4, 0.4),
+                              colors: [Color(0xFFA5D6A7), Color(0xFF2E7D32)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text('Đang phát hành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: const Center(
+                            child: Text('Sắp ra mắt', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF57C00),
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment(0.4, 0.4),
-                            colors: [Color(0xFFFFCC80), Color(0xFFF57C00)],
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FilterScreen(filterTitle: 'Thể loại', initialStatuses: const ['completed'], showBottomNav: true))),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF57C00),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment(0.4, 0.4),
+                              colors: [Color(0xFFFFCC80), Color(0xFFF57C00)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text('Đã hoàn thành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: const Center(
+                            child: Text('Đã hoàn thành', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
                         ),
                       ),
                     ),
@@ -338,25 +355,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: provider.currentPage > 1 ? () {
-                        provider.loadPagedComics(provider.currentPage - 1);
-                      } : null,
-                      child: const Text('Prev'),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF57C00),
+                      fixedSize: const Size(140, 40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
                     ),
-                    const SizedBox(width: 20),
-                    Text('Page ${provider.currentPage}'),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        provider.loadPagedComics(provider.currentPage + 1);
-                      },
-                      child: const Text('Next'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FilterScreen(filterTitle: 'Thể loại', startPage: 2, expandGenres: true, showBottomNav: true),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Xem thêm',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

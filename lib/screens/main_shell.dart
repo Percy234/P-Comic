@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'filter_screen.dart';
 import 'home_screen.dart';
 import 'favorite_screen.dart';
 import 'history_screen.dart';
@@ -16,6 +17,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> pages = const [
     HomeScreen(),
+    FilterScreen(filterTitle: 'Thể loại', showBottomNav: true),
     FavoriteScreen(),
     HistoryScreen(),
     ProfileScreen(),
@@ -38,6 +40,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Trang Chủ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category_outlined),
+            activeIcon: Icon(Icons.category),
+            label: 'Thể loại',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),
