@@ -12,9 +12,7 @@ class FavoriteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkFavorite(
-    String comicId,
-  ) async {
+  Future<void> checkFavorite(String comicId) async {
     isFavorite = await _db.isFavorite(comicId);
     notifyListeners();
   }
@@ -47,5 +45,11 @@ class FavoriteProvider extends ChangeNotifier {
       isFavorite = previous;
       notifyListeners();
     }
+  }
+
+  Future<void> removeFavoriteById(String comicId) async {
+    await _db.removeFavorite(comicId);
+    favorites.removeWhere((item) => item['comicId'] == comicId);
+    notifyListeners();
   }
 }

@@ -242,27 +242,13 @@ class _FilterScreenState extends State<FilterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'Bộ lọc',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            if (_selectedGenreSlugs.isNotEmpty || _selectedStatusValues.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: TextButton(
-                                  onPressed: () {
-                                    _clearGenres();
-                                    _clearStatuses();
-                                  },
-                                  child: const Text('Xóa lọc'),
-                                ),
-                              ),
-                          ],
+                        const Center(
+                          child: Text(
+                            'Bộ lọc',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
                         ),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
                             const Expanded(
@@ -329,14 +315,6 @@ class _FilterScreenState extends State<FilterScreen> {
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                               ),
                             ),
-                            if (_selectedStatusValues.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: TextButton(
-                                  onPressed: _clearStatuses,
-                                  child: const Text('Xóa lọc'),
-                                ),
-                              ),
                           ],
                         ),
                         const SizedBox(height: 12),

@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
       title: 'P Comic',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Cabin',
         scaffoldBackgroundColor: const Color(0xFFEBEBEB),
         cardColor: const Color(0xFFEBEBEB),
       ),

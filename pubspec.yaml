@@ -18,6 +18,7 @@ dependencies:
   timeago: ^3.7.0
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +27,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Cabin
+      fonts:
+        - asset: assets/fonts/Cabin-Regular.ttf
+        - asset: assets/fonts/Cabin-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Cabin-Bold.ttf
+          weight: 700

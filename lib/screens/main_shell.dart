@@ -17,7 +17,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> pages = const [
     HomeScreen(),
-    FilterScreen(filterTitle: 'Thể loại', showBottomNav: true),
+    FilterScreen(filterTitle: 'Thể loại', showBottomNav: false),
     FavoriteScreen(),
     HistoryScreen(),
     ProfileScreen(),
