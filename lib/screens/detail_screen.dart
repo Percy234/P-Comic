@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
 import '../models/comic_model.dart';
@@ -65,106 +64,137 @@ class _DetailScreenState extends State<DetailScreen> {
               CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 320,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.network(comic.imageUrl, fit: BoxFit.cover),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.black.withOpacity(0.2),
-                                  Colors.black.withOpacity(0.7),
-                                ],
+                    child: Stack(
+                      children: [
+                        // Blurred Background Cover Image
+                        Positioned.fill(
+                          child: Image.network(
+                            comic.imageUrl,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.35),
+                                      Colors.black.withOpacity(0.85),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          Positioned(
-                            left: 16,
-                            right: 16,
-                            top: 12,
-                            child: SafeArea(
+                        ),
+                        // Foreground Content
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Top Navigation
+                            SafeArea(
                               bottom: false,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  _HeaderIconButton(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: _HeaderIconButton(
                                     icon: Icons.arrow_back,
                                     onPressed: () => Navigator.pop(context),
                                   ),
-                                  Builder(
-                                    builder: (context) {
-                                      final favoriteProvider = context
-                                          .watch<FavoriteProvider>();
-                                      return _HeaderIconButton(
-                                        icon: favoriteProvider.isFavorite
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        iconColor: favoriteProvider.isFavorite
-                                            ? const Color(0xFFFF8A80)
-                                            : Colors.white,
-                                        onPressed: () async {
-                                          await favoriteProvider.toggleFavorite(
-                                            comicId: widget.comic.id,
-                                            name: widget.comic.name,
-                                            slug: widget.comic.slug,
-                                            thumbUrl: widget.comic.thumbUrl,
-                                          );
-                                        },
-                                      );
-                                    },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            // Sharp Cover Image (70% of screen width)
+                            Builder(
+                              builder: (context) {
+                                final screenWidth = MediaQuery.of(context).size.width;
+                                final coverWidth = screenWidth * 0.70;
+                                final coverHeight = coverWidth * 1.45;
+                                return Container(
+                                  width: coverWidth,
+                                  height: coverHeight,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.4),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      comic.imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey,
+                                          child: const Icon(
+                                            Icons.broken_image,
+                                            size: 48,
+                                            color: Colors.white,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            // Comic Title
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                comic.name,
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            // Comic Metadata Chips
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  _MetaChip(
+                                    icon: Icons.person_outline,
+                                    label: comic.author,
+                                  ),
+                                  _MetaChip(
+                                    icon: Icons.circle,
+                                    label: statusLabel,
+                                    iconColor: _statusColor(comic.status),
+                                  ),
+                                  _MetaChip(
+                                    icon: Icons.menu_book,
+                                    label: '${comic.chapters.length} chương',
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                          Positioned(
-                            left: 20,
-                            right: 20,
-                            bottom: 24,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  comic.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.playfairDisplay(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _MetaChip(
-                                      icon: Icons.person_outline,
-                                      label: comic.author,
-                                    ),
-                                    _MetaChip(
-                                      icon: Icons.circle,
-                                      label: statusLabel,
-                                      iconColor: _statusColor(comic.status),
-                                    ),
-                                    _MetaChip(
-                                      icon: Icons.menu_book,
-                                      label: '${comic.chapters.length} chương',
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -218,6 +248,41 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: Center(
+                        child: SizedBox(
+                          width: 180,
+                          child: Builder(
+                            builder: (context) {
+                              final favoriteProvider =
+                                  context.watch<FavoriteProvider>();
+                              return _ActionButton(
+                                label: favoriteProvider.isFavorite
+                                    ? 'Đã thích'
+                                    : 'Thích',
+                                icon: favoriteProvider.isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                background: favoriteProvider.isFavorite
+                                    ? const Color(0xFFC62828)
+                                    : const Color(0xFFFF9EBE),
+                                onPressed: () async {
+                                  await favoriteProvider.toggleFavorite(
+                                    comicId: widget.comic.id,
+                                    name: widget.comic.name,
+                                    slug: widget.comic.slug,
+                                    thumbUrl: widget.comic.thumbUrl,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -237,14 +302,14 @@ class _DetailScreenState extends State<DetailScreen> {
                           children: [
                             Text(
                               'Giới thiệu',
-                              style: GoogleFonts.playfairDisplay(
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: 12),
                             DefaultTextStyle(
-                              style: GoogleFonts.sourceSans3(
+                              style: const TextStyle(
                                 fontSize: 15,
                                 height: 1.4,
                                 color: Colors.black87,
@@ -272,7 +337,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         children: [
                           Text(
                             'Danh sách chương',
-                            style: GoogleFonts.playfairDisplay(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: theme.colorScheme.onSurface,
@@ -280,7 +345,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                           Text(
                             '${comic.chapters.length} chương',
-                            style: GoogleFonts.sourceSans3(
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Colors.black54,
                             ),
@@ -289,13 +354,12 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final chapter = comic.chapters[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                  if (comic.chapters.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
@@ -310,47 +374,82 @@ class _DetailScreenState extends State<DetailScreen> {
                               ),
                             ],
                           ),
-                          child: ListTile(
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${index + 1}',
-                                style: GoogleFonts.sourceSans3(
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1B5E20),
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              chapter.name,
-                              style: GoogleFonts.sourceSans3(
+                          child: Center(
+                            child: Text(
+                              'Đang cập nhật',
+                              style: TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
                               ),
                             ),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      ReadingScreen(apiUrl: chapter.apiData),
-                                ),
-                              );
-                            },
                           ),
-                        );
-                      }, childCount: comic.chapters.length),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final chapter = comic.chapters[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF1B5E20).withOpacity(0.08),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F5E9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1B5E20),
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                chapter.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ReadingScreen(apiUrl: chapter.apiData),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        }, childCount: comic.chapters.length),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ],
@@ -411,7 +510,7 @@ class _MetaChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.sourceSans3(
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -443,7 +542,7 @@ class _ActionButton extends StatelessWidget {
       icon: Icon(icon, size: 20),
       label: Text(
         label,
-        style: GoogleFonts.sourceSans3(fontWeight: FontWeight.w700),
+        style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: background,

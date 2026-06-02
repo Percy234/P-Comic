@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Cabin',
         primarySwatch: Colors.blue,
-        fontFamily: 'Cabin',
         scaffoldBackgroundColor: const Color(0xFFEBEBEB),
         cardColor: const Color(0xFFEBEBEB),
       ),
