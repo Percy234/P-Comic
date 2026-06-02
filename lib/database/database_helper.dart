@@ -1,88 +1,33 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/comic_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
-  static Database? _database;
   DatabaseHelper._init();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('p_comic.db');
-    return _database!;
+  static const String _favoritesBoxName = 'favorites';
+  static const String _historiesBoxName = 'histories';
+  static const String _followsBoxName = 'follows';
+
+  // Khởi tạo các Box lưu trữ dữ liệu
+  Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox(_favoritesBoxName);
+    await Hive.openBox(_historiesBoxName);
+    await Hive.openBox(_followsBoxName);
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _createDB,
-      onUpgrade: _onUpgrade,
-    );
-  }
+  Box get _favoritesBox => Hive.box(_favoritesBoxName);
+  Box get _historiesBox => Hive.box(_historiesBoxName);
 
-  Future _createDB(Database db, int versionn) async {
-    await db.execute('''
-      CREATE TABLE favorites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        comicId TEXT UNIQUE,
-        name TEXT,
-        slug TEXT,
-        thumbUrl TEXT,
-        addedAt TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE follows(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        comicId TEXT UNIQUE,
-        name TEXT,
-        slug TEXT,
-        thumbUrl TEXT,
-        followedAt TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE histories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        comicId TEXT UNIQUE,
-        name TEXT,
-        slug TEXT,
-        thumbUrl TEXT,
-        visitedAt TEXT
-      )
-    ''');
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute('''
-        CREATE TABLE histories (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          comicId TEXT UNIQUE,
-          name TEXT,
-          slug TEXT,
-          thumbUrl TEXT,
-          visitedAt TEXT
-        )
-      ''');
-    }
-  }
-
+  // --- FAVORITES ---
   Future<void> insertFavorite(Comic comic) async {
-    final db = await instance.database;
-    await db.insert('favorites', {
-      'comicId': comic.id,
-      'name': comic.name,
-      'slug': comic.slug,
-      'thumbUrl': comic.thumbUrl,
-      'addedAt': DateTime.now().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await insertFavoriteData(
+      comicId: comic.id,
+      name: comic.name,
+      slug: comic.slug,
+      thumbUrl: comic.thumbUrl,
+    );
   }
 
   Future<void> insertFavoriteData({
@@ -91,54 +36,62 @@ class DatabaseHelper {
     required String slug,
     required String thumbUrl,
   }) async {
-    final db = await instance.database;
-    await db.insert('favorites', {
+    await _favoritesBox.put(comicId, {
       'comicId': comicId,
       'name': name,
       'slug': slug,
       'thumbUrl': thumbUrl,
       'addedAt': DateTime.now().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    });
   }
 
   Future<void> removeFavorite(String comicId) async {
-    final db = await instance.database;
-    await db.delete('favorites', where: 'comicId = ?', whereArgs: [comicId]);
+    await _favoritesBox.delete(comicId);
   }
 
   Future<List<Map<String, dynamic>>> getFavorites() async {
-    final db = await instance.database;
-    return await db.query('favorites', orderBy: 'addedAt DESC');
+    final rawData = _favoritesBox.values;
+    final list = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    
+    // Sắp xếp theo addedAt mới nhất lên đầu
+    list.sort((a, b) {
+      final aDate = DateTime.tryParse(a['addedAt'] ?? '') ?? DateTime.now();
+      final bDate = DateTime.tryParse(b['addedAt'] ?? '') ?? DateTime.now();
+      return bDate.compareTo(aDate);
+    });
+    return list;
   }
 
   Future<bool> isFavorite(String comicId) async {
-    final db = await instance.database;
-    final result = await db.query(
-      'favorites',
-      where: 'comicId = ?',
-      whereArgs: [comicId],
-    );
-    return result.isNotEmpty;
+    return _favoritesBox.containsKey(comicId);
   }
 
+  // --- HISTORIES ---
   Future<void> insertHistoryData({
     required String comicId,
     required String name,
     required String slug,
     required String thumbUrl,
   }) async {
-    final db = await instance.database;
-    await db.insert('histories', {
+    await _historiesBox.put(comicId, {
       'comicId': comicId,
       'name': name,
       'slug': slug,
       'thumbUrl': thumbUrl,
       'visitedAt': DateTime.now().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    });
   }
 
   Future<List<Map<String, dynamic>>> getHistories() async {
-    final db = await instance.database;
-    return await db.query('histories', orderBy: 'visitedAt DESC');
+    final rawData = _historiesBox.values;
+    final list = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    
+    // Sắp xếp theo visitedAt mới nhất lên đầu
+    list.sort((a, b) {
+      final aDate = DateTime.tryParse(a['visitedAt'] ?? '') ?? DateTime.now();
+      final bDate = DateTime.tryParse(b['visitedAt'] ?? '') ?? DateTime.now();
+      return bDate.compareTo(aDate);
+    });
+    return list;
   }
 }

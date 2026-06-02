@@ -24,9 +24,6 @@ class _DetailScreenState extends State<DetailScreen> {
       context.read<DetailProvider>().loadDetail(widget.comic.slug);
     });
     Future.microtask(() {
-      context.read<FavoriteProvider>().checkFavorite(widget.comic.id);
-    });
-    Future.microtask(() {
       context.read<HistoryProvider>().recordHistory(
         comicId: widget.comic.id,
         name: widget.comic.name,
@@ -254,18 +251,21 @@ class _DetailScreenState extends State<DetailScreen> {
                           width: 180,
                           child: Builder(
                             builder: (context) {
-                              final favoriteProvider =
-                                  context.watch<FavoriteProvider>();
+                              final favoriteProvider = context.watch<FavoriteProvider>();
+                              final isFavorite = favoriteProvider.isFavoriteComic(widget.comic.id);
                               return _ActionButton(
-                                label: favoriteProvider.isFavorite
+                                label: isFavorite
                                     ? 'Đã thích'
                                     : 'Thích',
-                                icon: favoriteProvider.isFavorite
+
+                                icon: isFavorite
                                     ? Icons.favorite
                                     : Icons.favorite_border,
-                                background: favoriteProvider.isFavorite
+
+                                background: isFavorite
                                     ? const Color(0xFFC62828)
                                     : const Color(0xFFFF9EBE),
+
                                 onPressed: () async {
                                   await favoriteProvider.toggleFavorite(
                                     comicId: widget.comic.id,

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter/foundation.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'database/database_helper.dart';
 
 import 'providers/comic_provider.dart';
 import 'providers/detail_provider.dart';
@@ -19,9 +17,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
-  }
+  // Khởi tạo cơ sở dữ liệu Hive
+  await DatabaseHelper.instance.initHive();
+
   timeago.setLocaleMessages('vi', timeago.ViMessages());
   runApp(
     MultiProvider(
@@ -29,7 +27,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ComicProvider()),
         ChangeNotifierProvider(create: (_) => DetailProvider()),
         ChangeNotifierProvider(create: (_) => ReadingProvider()),
-        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],

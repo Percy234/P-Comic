@@ -3,18 +3,18 @@ import '../database/database_helper.dart';
 
 class FavoriteProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
-  List<Map<String, dynamic>> favorites = [];
 
-  bool isFavorite = false;
+  List<Map<String, dynamic>> favorites = [];
 
   Future<void> loadFavorites() async {
     favorites = await _db.getFavorites();
     notifyListeners();
   }
 
-  Future<void> checkFavorite(String comicId) async {
-    isFavorite = await _db.isFavorite(comicId);
-    notifyListeners();
+  bool isFavoriteComic(String comicId) {
+    return favorites.any(
+      (item) => item['comicId'] == comicId,
+    );
   }
 
   Future<void> toggleFavorite({
@@ -23,13 +23,15 @@ class FavoriteProvider extends ChangeNotifier {
     required String slug,
     required String thumbUrl,
   }) async {
-    final previous = isFavorite;
-    // optimistic update: update UI immediately
-    isFavorite = !previous;
-    notifyListeners();
     try {
-      if (previous) {
+      final exists = isFavoriteComic(comicId);
+
+      if (exists) {
         await _db.removeFavorite(comicId);
+
+        favorites.removeWhere(
+          (item) => item['comicId'] == comicId,
+        );
       } else {
         await _db.insertFavoriteData(
           comicId: comicId,
@@ -37,19 +39,29 @@ class FavoriteProvider extends ChangeNotifier {
           slug: slug,
           thumbUrl: thumbUrl,
         );
+
+        favorites.insert(0, {
+          'comicId': comicId,
+          'name': name,
+          'slug': slug,
+          'thumbUrl': thumbUrl,
+          'addedAt': DateTime.now().toIso8601String(),
+        });
       }
-      // refresh favorites in background (don't block UI)
-      loadFavorites();
-    } catch (e) {
-      // rollback on error
-      isFavorite = previous;
+
       notifyListeners();
+    } catch (e) {
+      // Báo lỗi nếu xảy ra
     }
   }
 
   Future<void> removeFavoriteById(String comicId) async {
     await _db.removeFavorite(comicId);
-    favorites.removeWhere((item) => item['comicId'] == comicId);
+
+    favorites.removeWhere(
+      (item) => item['comicId'] == comicId,
+    );
+
     notifyListeners();
   }
 }
