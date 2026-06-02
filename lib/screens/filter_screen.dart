@@ -30,7 +30,6 @@ class _FilterScreenState extends State<FilterScreen> {
   final ApiService _api = ApiService();
   final ScrollController _scrollController = ScrollController();
   List localComics = <dynamic>[];
-  List<dynamic> _allLocalComics = <dynamic>[];
   List<ComicGenre> _genres = <ComicGenre>[];
   final Set<String> _selectedGenreSlugs = <String>{};
   final Set<String> _selectedStatusValues = <String>{};
@@ -122,7 +121,6 @@ class _FilterScreenState extends State<FilterScreen> {
         _localPage = page;
       }
 
-      _allLocalComics = loadedComics;
       localComics = _applyLocalFilters(loadedComics);
     } catch (e) {
       // keep localComics as-is
@@ -199,14 +197,6 @@ class _FilterScreenState extends State<FilterScreen> {
     }).toList();
   }
 
-  String _statusLabel(String status) {
-    return _statusOptions
-            .firstWhere(
-              (option) => option.value == status,
-              orElse: () => _StatusOption(value: status, label: status),
-            )
-            .label;
-  }
 
   String _formatSubtitle(String? raw) {
     if (raw == null || raw.trim().isEmpty) return 'Sắp ra';

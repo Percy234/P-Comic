@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'P Comic',
       theme: ThemeData(
+        fontFamily: 'Cabin',
         primarySwatch: Colors.blue,
         fontFamily: 'Cabin',
         scaffoldBackgroundColor: const Color(0xFFEBEBEB),
