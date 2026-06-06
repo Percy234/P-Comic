@@ -744,39 +744,63 @@ class _FilterScreenState extends State<FilterScreen> {
     ],
   ),
       bottomNavigationBar: widget.showBottomNav
-          ? BottomNavigationBar(
-              currentIndex: 1,
-              type: BottomNavigationBarType.fixed,
-              onTap: (index) {
-                if (index == 1) return;
-                Navigator.of(context).popUntil((route) => route.isFirst);
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                final double totalWidth = constraints.maxWidth;
+                final double tabWidth = totalWidth / 5;
+                final double indicatorWidth = 56.0;
+
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    BottomNavigationBar(
+                      currentIndex: 1,
+                      type: BottomNavigationBarType.fixed,
+                      selectedItemColor: const Color(0xFFF57C00),
+                      unselectedItemColor: Colors.grey,
+                      onTap: (index) {
+                        if (index == 1) return;
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      items: const [
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.home_outlined),
+                          activeIcon: Icon(Icons.home),
+                          label: 'Trang Chủ',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.category_outlined),
+                          activeIcon: Icon(Icons.category),
+                          label: 'Thể loại',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.favorite_border),
+                          activeIcon: Icon(Icons.favorite),
+                          label: 'Yêu Thích',
+                        ),
+                        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch Sử'),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.person_outline),
+                          activeIcon: Icon(Icons.person),
+                          label: 'Cá Nhân',
+                        ),
+                      ],
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: (tabWidth * 1) + (tabWidth - indicatorWidth) / 2,
+                      child: Container(
+                        width: indicatorWidth,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF57C00),
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
               },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Trang Chủ',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.category_outlined),
-                  activeIcon: Icon(Icons.category),
-                  label: 'Thể loại',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.favorite_border),
-                  activeIcon: Icon(Icons.favorite),
-                  label: 'Yêu Thích',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.history),
-                  label: 'Lịch Sử',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Cá Nhân',
-                ),
-              ],
             )
           : null,
     );

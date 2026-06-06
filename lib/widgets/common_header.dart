@@ -10,11 +10,13 @@ import '../screens/detail_screen.dart';
 class CommonHeader extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String> onSearchChanged;
+  final bool showAuthButtons;
 
   const CommonHeader({
     super.key,
     required this.controller,
     required this.onSearchChanged,
+    this.showAuthButtons = true,
   });
 
   @override
@@ -119,7 +121,7 @@ class _CommonHeaderState extends State<CommonHeader> {
               fontWeight: FontWeight.bold,
             ),
           ),
-        ] else ...[
+        ] else if (widget.showAuthButtons) ...[
           TextButton(
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 6),
