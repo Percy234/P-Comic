@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
+import '../widgets/common_header.dart';
 import 'filter_screen.dart';
-import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
   String _searchQuery = '';
 
   @override
@@ -29,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -96,111 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: Colors.grey[200]!),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _searchController,
-                                      onChanged: (value) {
-                                        if (value.trim().isEmpty) {
-                                          if (_debounce?.isActive ?? false) _debounce?.cancel();
-                                          setState(() {
-                                            _searchQuery = '';
-                                          });
-                                          context.read<ComicProvider>().searchComics('');
-                                        } else {
-                                          if (_debounce?.isActive ?? false) _debounce?.cancel();
-                                          _debounce = Timer(const Duration(milliseconds: 500), () {
-                                            setState(() {
-                                              _searchQuery = value;
-                                            });
-                                            context.read<ComicProvider>().searchComics(value);
-                                          });
-                                        }
-                                      },
-                                      decoration: const InputDecoration(
-                                        hintText: 'Tìm kiếm...',
-                                        hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(vertical: 8),
-                                      ),
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                  ),
-                                  if (_searchQuery.isNotEmpty) ...[
-                                    const SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: () {
-                                        _searchController.clear();
-                                        if (_debounce?.isActive ?? false) _debounce?.cancel();
-                                        setState(() {
-                                          _searchQuery = '';
-                                        });
-                                        context.read<ComicProvider>().searchComics('');
-                                      },
-                                      child: const Icon(Icons.close, color: Colors.grey, size: 18),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              // Xử lý đăng nhập
-                            },
-                            child: const Text(
-                              'Đăng nhập',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFFF57C00),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const Text(
-                            '|',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              // Xử lý đăng ký
-                            },
-                            child: const Text(
-                              'Đăng ký',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                      CommonHeader(
+                        controller: _searchController,
+                        onSearchChanged: (query) {
+                          setState(() {
+                            _searchQuery = query;
+                          });
+                        },
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -498,10 +398,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     if (_searchQuery.trim().isNotEmpty)
                       Positioned(
-                        top: 68,
+                        top: 56,
                         left: 16,
                         right: 16,
-                        child: _buildSearchResultsBox(provider),
+                        child: SearchResultsBox(
+                          searchQuery: _searchQuery,
+                          onTapResult: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = '';
+                            });
+                          },
+                        ),
                       ),
                   ],
                 );
@@ -560,145 +468,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSearchResultsBox(ComicProvider provider) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(maxHeight: 420),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: provider.isSearchLoading
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          : provider.searchedComics.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: Text(
-                      'Không tìm thấy truyện nào phù hợp',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                  ),
-                )
-              : ListView.separated(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                  itemCount: provider.searchedComics.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final comic = provider.searchedComics[index];
-                    if (!provider.latestChapterNames.containsKey(comic.slug)) {
-                      Future.microtask(
-                        () => provider.loadLatestChapter(comic.slug),
-                      );
-                    }
-                    final latestChapter = provider.latestChapterNames[comic.slug] ?? '';
-                    final genres = comic.categories.map((c) => c.name).join(', ');
-
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailScreen(comic: comic),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                comic.imageUrl,
-                                width: 70,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  width: 70,
-                                  height: 100,
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    comic.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  if (latestChapter.isNotEmpty)
-                                    Text(
-                                      _formatSubtitle(latestChapter),
-                                      style: TextStyle(
-                                        color: Colors.orange[800],
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13,
-                                      ),
-                                    )
-                                  else
-                                    Text(
-                                      comic.status == 'ongoing'
-                                          ? 'Đang phát hành'
-                                          : comic.status == 'completed'
-                                              ? 'Đã hoàn thành'
-                                              : 'Sắp ra mắt',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  const SizedBox(height: 6),
-                                  if (genres.isNotEmpty)
-                                    Text(
-                                      genres,
-                                      style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: 12,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
     );
   }
 }

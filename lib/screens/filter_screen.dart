@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/background_decorations.dart';
@@ -6,6 +7,7 @@ import '../models/comic_genre_model.dart';
 import '../models/comic_response_model.dart';
 import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
+import '../widgets/common_header.dart';
 import '../services/api_service.dart';
 
 class FilterScreen extends StatefulWidget {
@@ -30,6 +32,8 @@ class FilterScreen extends StatefulWidget {
 class _FilterScreenState extends State<FilterScreen> {
   final ApiService _api = ApiService();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   List localComics = <dynamic>[];
   List<ComicGenre> _genres = <ComicGenre>[];
   final Set<String> _selectedGenreSlugs = <String>{};
@@ -168,6 +172,7 @@ class _FilterScreenState extends State<FilterScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -196,37 +201,41 @@ class _FilterScreenState extends State<FilterScreen> {
     final hasActiveFilters = _selectedGenreSlugs.isNotEmpty || _selectedStatusValues.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: !widget.showBottomNav,
-        title: Text(widget.filterTitle),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
-      ),
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           const BackgroundDecorations(),
           _loadingLocal && localComics.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : SafeArea(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  child: Stack(
+                    children: [
+                      SingleChildScrollView(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CommonHeader(
+                              controller: _searchController,
+                              onSearchChanged: (query) {
+                                setState(() {
+                                  _searchQuery = query;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
@@ -238,14 +247,21 @@ class _FilterScreenState extends State<FilterScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.tune_rounded, color: Colors.blueGrey[800], size: 22),
+                                Container(
+                                  width: 4,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF57C00),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
                                 const SizedBox(width: 8),
-                                Text(
+                                const Text(
                                   'Bộ lọc nâng cao',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blueGrey[900],
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                               ],
@@ -497,186 +513,236 @@ class _FilterScreenState extends State<FilterScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        hasActiveFilters ? 'Kết quả lọc' : 'Tất cả truyện',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      Text(
-                        '${localComics.length} truyện',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (localComics.isEmpty && !_loadingLocal)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off_rounded,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Không tìm thấy truyện nào',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Hãy thử thay đổi hoặc đặt lại bộ lọc của bạn',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                _selectedGenreSlugs.clear();
-                                _selectedStatusValues.clear();
-                              });
-                              _loadLocalPage(1);
-                            },
-                            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                            label: const Text(
-                              'Đặt lại bộ lọc',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFC62828),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              elevation: 2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else ...[
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: localComics.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.5,
-                      ),
-                      itemBuilder: (context, index) {
-                        final comic = localComics[index];
-                        if (!provider.latestChapterNames.containsKey(comic.slug)) {
-                          Future.microtask(() => provider.loadLatestChapter(comic.slug));
-                          return ComicCard(
-                            comic: comic,
-                            subtitle: 'Đang tải',
-                          );
-                        }
-                        return ComicCard(
-                          comic: comic,
-                          subtitle: _formatSubtitle(provider.latestChapterNames[comic.slug]),
-                        );
-                      },
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF57C00),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  hasActiveFilters ? 'Kết quả lọc' : 'Tất cả truyện',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '${localComics.length} truyện',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: _localPage > 1
-                                  ? () => _loadLocalPage(_localPage - 1)
-                                  : null,
-                              icon: const Icon(Icons.chevron_left_rounded),
-                              color: const Color(0xFFC62828),
-                              disabledColor: Colors.black26,
-                              style: IconButton.styleFrom(
-                                backgroundColor: _localPage > 1
-                                    ? const Color(0xFFC62828).withOpacity(0.1)
-                                    : Colors.transparent,
-                                padding: const EdgeInsets.all(8),
-                              ),
+                        const SizedBox(height: 16),
+                        if (localComics.isEmpty && !_loadingLocal)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Không tìm thấy truyện nào',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Hãy thử thay đổi hoặc đặt lại bộ lọc của bạn',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedGenreSlugs.clear();
+                                      _selectedStatusValues.clear();
+                                    });
+                                    _loadLocalPage(1);
+                                  },
+                                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                                  label: const Text(
+                                    'Đặt lại bộ lọc',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFC62828),
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    elevation: 2,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          )
+                        else ...[
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: localComics.length,
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.5,
+                            ),
+                            itemBuilder: (context, index) {
+                              final comic = localComics[index];
+                              if (!provider.latestChapterNames.containsKey(comic.slug)) {
+                                Future.microtask(() => provider.loadLatestChapter(comic.slug));
+                                return ComicCard(
+                                  comic: comic,
+                                  subtitle: 'Đang tải',
+                                );
+                              }
+                              return ComicCard(
+                                comic: comic,
+                                subtitle: _formatSubtitle(provider.latestChapterNames[comic.slug]),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFC62828),
-                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFC62828).withOpacity(0.2),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Text(
-                                'Trang $_localPage',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: _localPage > 1
+                                        ? () => _loadLocalPage(_localPage - 1)
+                                        : null,
+                                    icon: const Icon(Icons.chevron_left_rounded),
+                                    color: const Color(0xFFC62828),
+                                    disabledColor: Colors.black26,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: _localPage > 1
+                                          ? const Color(0xFFC62828).withOpacity(0.1)
+                                          : Colors.transparent,
+                                      padding: const EdgeInsets.all(8),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFC62828),
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFC62828).withOpacity(0.2),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      'Trang $_localPage',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  IconButton(
+                                    onPressed: () => _loadLocalPage(_localPage + 1),
+                                    icon: const Icon(Icons.chevron_right_rounded),
+                                    color: const Color(0xFFC62828),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: const Color(0xFFC62828).withOpacity(0.1),
+                                      padding: const EdgeInsets.all(8),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            IconButton(
-                              onPressed: () => _loadLocalPage(_localPage + 1),
-                              icon: const Icon(Icons.chevron_right_rounded),
-                              color: const Color(0xFFC62828),
-                              style: IconButton.styleFrom(
-                                backgroundColor: const Color(0xFFC62828).withOpacity(0.1),
-                                padding: const EdgeInsets.all(8),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+            if (_searchQuery.trim().isNotEmpty)
+              Positioned(
+                top: 56,
+                left: 16,
+                right: 16,
+                child: SearchResultsBox(
+                  searchQuery: _searchQuery,
+                  onTapResult: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
+    ],
+  ),
       bottomNavigationBar: widget.showBottomNav
           ? BottomNavigationBar(
               currentIndex: 1,

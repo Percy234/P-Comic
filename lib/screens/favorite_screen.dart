@@ -5,6 +5,7 @@ import '../widgets/background_decorations.dart';
 import '../models/comic_genre_model.dart';
 import '../models/comic_model.dart';
 import '../providers/favorite_provider.dart';
+import '../widgets/common_header.dart';
 import 'detail_screen.dart';
 
 class FavoriteScreen extends StatefulWidget {
@@ -15,6 +16,9 @@ class FavoriteScreen extends StatefulWidget {
 }
 
 class _FavoriteScreenState extends State<FavoriteScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -24,190 +28,215 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Yêu Thích'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            tooltip: 'Làm mới',
-            onPressed: () => context.read<FavoriteProvider>().loadFavorites(),
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           const BackgroundDecorations(),
           SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => context.read<FavoriteProvider>().loadFavorites(),
-              child: Consumer<FavoriteProvider>(
-                builder: (context, provider, child) {
-                  return CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
+            child: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: () => context.read<FavoriteProvider>().loadFavorites(),
+                  child: Consumer<FavoriteProvider>(
+                    builder: (context, provider, child) {
+                      return CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                              child: CommonHeader(
+                                controller: _searchController,
+                                onSearchChanged: (query) {
+                                  setState(() {
+                                    _searchQuery = query;
+                                  });
+                                },
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Bộ sưu tập của bạn',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
+                          ),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.12),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Bộ sưu tập của bạn',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            'Lưu lại những truyện bạn muốn theo dõi lâu dài.',
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.9),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(999),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.4),
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        'Lưu lại những truyện bạn muốn theo dõi lâu dài.',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.9),
+                                      child: Text(
+                                        '${provider.favorites.length} truyện',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
                                         ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (provider.favorites.isEmpty)
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 72,
+                                        height: 72,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withOpacity(
+                                            0.1,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.favorite_border,
+                                          size: 36,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        'Chưa có truyện yêu thích',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        'Hãy lưu lại những bộ truyện bạn muốn theo dõi để xem nhanh ở đây.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.black54),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '${provider.favorites.length} truyện',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (provider.favorites.isEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 72,
-                                    height: 72,
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withOpacity(
-                                        0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.favorite_border,
-                                      size: 36,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'Chưa có truyện yêu thích',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'Hãy lưu lại những bộ truyện bạn muốn theo dõi để xem nhanh ở đây.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.black54),
-                                  ),
-                                ],
                               ),
-                            ),
-                          ),
-                        )
-                      else
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                          sliver: SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
+                            )
+                          else
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                              sliver: SliverGrid(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 12,
                                   mainAxisSpacing: 12,
                                   childAspectRatio: 0.6,
                                 ),
-                            delegate: SliverChildBuilderDelegate((context, index) {
-                              final item = provider.favorites[index];
-                              final name = item['name'] ?? '';
-                              final thumbUrl = item['thumbUrl'] ?? '';
-                              final addedAt = _formatAddedAt(item['addedAt']);
-                              return _FavoriteCard(
-                                name: name,
-                                imageUrl:
-                                    'https://img.otruyenapi.com/uploads/comics/$thumbUrl',
-                                addedAt: addedAt,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          DetailScreen(comic: _mapToComic(item)),
-                                    ),
+                                delegate: SliverChildBuilderDelegate((context, index) {
+                                  final item = provider.favorites[index];
+                                  final name = item['name'] ?? '';
+                                  final thumbUrl = item['thumbUrl'] ?? '';
+                                  final addedAt = _formatAddedAt(item['addedAt']);
+                                  return _FavoriteCard(
+                                    name: name,
+                                    imageUrl:
+                                        'https://img.otruyenapi.com/uploads/comics/$thumbUrl',
+                                    addedAt: addedAt,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              DetailScreen(comic: _mapToComic(item)),
+                                        ),
+                                      );
+                                    },
+                                    onRemove: () {
+                                      final comicId = item['comicId'] ?? '';
+                                      if (comicId.isEmpty) return;
+                                      context.read<FavoriteProvider>().removeFavoriteById(
+                                        comicId,
+                                      );
+                                    },
                                   );
-                                },
-                                onRemove: () {
-                                  final comicId = item['comicId'] ?? '';
-                                  if (comicId.isEmpty) return;
-                                  context.read<FavoriteProvider>().removeFavoriteById(
-                                    comicId,
-                                  );
-                                },
-                              );
-                            }, childCount: provider.favorites.length),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
+                                }, childCount: provider.favorites.length),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                if (_searchQuery.trim().isNotEmpty)
+                  Positioned(
+                    top: 56,
+                    left: 16,
+                    right: 16,
+                    child: SearchResultsBox(
+                      searchQuery: _searchQuery,
+                      onTapResult: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
