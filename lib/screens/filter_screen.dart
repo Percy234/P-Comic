@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../widgets/background_decorations.dart';
 
 import '../models/comic_genre_model.dart';
 import '../models/comic_response_model.dart';
@@ -148,14 +149,6 @@ class _FilterScreenState extends State<FilterScreen> {
     await _loadLocalPage(1);
   }
 
-  Future<void> _clearGenres() async {
-    if (_selectedGenreSlugs.isEmpty) return;
-    setState(() {
-      _selectedGenreSlugs.clear();
-    });
-    await _loadLocalPage(1);
-  }
-
   Future<void> _toggleStatus(String value) async {
     setState(() {
       if (_selectedStatusValues.contains(value)) {
@@ -163,14 +156,6 @@ class _FilterScreenState extends State<FilterScreen> {
       } else {
         _selectedStatusValues.add(value);
       }
-    });
-    await _loadLocalPage(1);
-  }
-
-  Future<void> _clearStatuses() async {
-    if (_selectedStatusValues.isEmpty) return;
-    setState(() {
-      _selectedStatusValues.clear();
     });
     await _loadLocalPage(1);
   }
@@ -208,54 +193,134 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ComicProvider>();
+    final hasActiveFilters = _selectedGenreSlugs.isNotEmpty || _selectedStatusValues.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !widget.showBottomNav,
         title: Text(widget.filterTitle),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black87,
       ),
-      body: _loadingLocal && localComics.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(12),
-              child: Column(
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          const BackgroundDecorations(),
+          _loadingLocal && localComics.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.black12),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Center(
-                          child: Text(
-                            'Bộ lọc',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Expanded(
-                              child: Text(
-                                'Chọn thể loại',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                              ),
+                            Row(
+                              children: [
+                                Icon(Icons.tune_rounded, color: Colors.blueGrey[800], size: 22),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Bộ lọc nâng cao',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blueGrey[900],
+                                  ),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: _toggleGenrePanel,
-                              icon: AnimatedRotation(
-                                turns: _genresExpanded ? 0.5 : 0,
-                                duration: const Duration(milliseconds: 180),
-                                child: const Icon(Icons.keyboard_arrow_down),
+                            if (hasActiveFilters)
+                              TextButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedGenreSlugs.clear();
+                                    _selectedStatusValues.clear();
+                                  });
+                                  _loadLocalPage(1);
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFFC62828),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                                label: const Text(
+                                  'Đặt lại',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                ),
                               ),
-                            ),
                           ],
+                        ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          onTap: _toggleGenrePanel,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Chọn thể loại',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blueGrey[800],
+                                        ),
+                                      ),
+                                      if (_selectedGenreSlugs.isNotEmpty)
+                                        Container(
+                                          margin: const EdgeInsets.only(left: 8),
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFC62828).withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Text(
+                                            '${_selectedGenreSlugs.length}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFFC62828),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                AnimatedRotation(
+                                  turns: _genresExpanded ? 0.5 : 0,
+                                  duration: const Duration(milliseconds: 180),
+                                  child: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey[600]),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         AnimatedCrossFade(
                           firstChild: const SizedBox.shrink(),
@@ -265,8 +330,11 @@ class _FilterScreenState extends State<FilterScreen> {
                               const SizedBox(height: 12),
                               if (_genres.isEmpty)
                                 const Padding(
-                                  padding: EdgeInsets.only(bottom: 12),
-                                  child: Text('Đang tải danh sách thể loại...'),
+                                  padding: EdgeInsets.only(bottom: 12, top: 4),
+                                  child: Text(
+                                    'Đang tải danh sách thể loại...',
+                                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                                  ),
                                 )
                               else
                                 Wrap(
@@ -274,15 +342,43 @@ class _FilterScreenState extends State<FilterScreen> {
                                   runSpacing: 8,
                                   children: _genres.map((genre) {
                                     final selected = _selectedGenreSlugs.contains(genre.slug);
-                                    return FilterChip(
-                                      selected: selected,
-                                      showCheckmark: false,
-                                      label: Text(genre.name),
-                                      onSelected: (_) => _toggleGenre(genre.slug),
-                                      selectedColor: const Color(0xFFF57C00).withOpacity(0.22),
-                                      labelStyle: TextStyle(
-                                        color: selected ? const Color(0xFFC62828) : Colors.black87,
-                                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                                    return GestureDetector(
+                                      onTap: () => _toggleGenre(genre.slug),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 150),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          gradient: selected
+                                              ? const LinearGradient(
+                                                  colors: [Color(0xFFFF8A80), Color(0xFFC62828)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                )
+                                              : null,
+                                          color: selected ? null : Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color: selected ? Colors.transparent : Colors.black12,
+                                            width: 1,
+                                          ),
+                                          boxShadow: selected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: const Color(0xFFC62828).withOpacity(0.25),
+                                                    blurRadius: 6,
+                                                    offset: const Offset(0, 3),
+                                                  )
+                                                ]
+                                              : [],
+                                        ),
+                                        child: Text(
+                                          genre.name,
+                                          style: TextStyle(
+                                            color: selected ? Colors.white : Colors.black87,
+                                            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ),
                                     );
                                   }).toList(),
@@ -295,39 +391,101 @@ class _FilterScreenState extends State<FilterScreen> {
                           duration: const Duration(milliseconds: 180),
                         ),
                         const SizedBox(height: 16),
-                        const Divider(height: 1),
+                        const Divider(height: 1, color: Colors.black12),
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            const Expanded(
-                              child: Text(
-                                'Chọn trạng thái truyện',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                            Text(
+                              'Chọn trạng thái truyện',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueGrey[800],
                               ),
                             ),
+                            if (_selectedStatusValues.isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1565C0).withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${_selectedStatusValues.length}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Row(
                           children: _statusOptions.map((status) {
                             final selected = _selectedStatusValues.contains(status.value);
-                            final colors = _statusChipColors(status.value);
+                            Color themeColor;
+                            IconData iconData;
+
+                            if (status.value == 'ongoing') {
+                              themeColor = const Color(0xFF1565C0);
+                              iconData = Icons.sync_rounded;
+                            } else if (status.value == 'coming_soon') {
+                              themeColor = const Color(0xFF2E7D32);
+                              iconData = Icons.watch_later_outlined;
+                            } else {
+                              themeColor = const Color(0xFFF57C00);
+                              iconData = Icons.check_circle_outline_rounded;
+                            }
+
                             return Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: FilterChip(
-                                    selected: selected,
-                                    showCheckmark: false,
-                                    label: Center(child: Text(status.label, textAlign: TextAlign.center)),
-                                    onSelected: (_) => _toggleStatus(status.value),
-                                    selectedColor: colors.selectedBackground,
-                                    backgroundColor: colors.background,
-                                    side: BorderSide(color: colors.border),
-                                    labelStyle: TextStyle(
-                                      color: selected ? colors.selectedText : colors.text,
-                                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                                child: GestureDetector(
+                                  onTap: () => _toggleStatus(status.value),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? themeColor
+                                          : themeColor.withOpacity(0.06),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: selected ? Colors.transparent : themeColor.withOpacity(0.25),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: selected
+                                          ? [
+                                              BoxShadow(
+                                                color: themeColor.withOpacity(0.25),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 4),
+                                              )
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          iconData,
+                                          color: selected ? Colors.white : themeColor,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          status.label,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: selected ? Colors.white : themeColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -338,57 +496,187 @@ class _FilterScreenState extends State<FilterScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Tất cả truyện',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: localComics.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.5,
-                    ),
-                    itemBuilder: (context, index) {
-                      final comic = localComics[index];
-                      if (!provider.latestChapterNames.containsKey(comic.slug)) {
-                        Future.microtask(() => provider.loadLatestChapter(comic.slug));
-                        return ComicCard(
-                          comic: comic,
-                          subtitle: 'Đang tải',
-                        );
-                      }
-                      return ComicCard(
-                        comic: comic,
-                        subtitle: _formatSubtitle(provider.latestChapterNames[comic.slug]),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton(
-                        onPressed: _localPage > 1 ? () => _loadLocalPage(_localPage - 1) : null,
-                        child: const Text('Prev'),
+                      Text(
+                        hasActiveFilters ? 'Kết quả lọc' : 'Tất cả truyện',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                      const SizedBox(width: 20),
-                      Text('Page $_localPage'),
-                      const SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () => _loadLocalPage(_localPage + 1),
-                        child: const Text('Next'),
+                      Text(
+                        '${localComics.length} truyện',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  if (localComics.isEmpty && !_loadingLocal)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Không tìm thấy truyện nào',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Hãy thử thay đổi hoặc đặt lại bộ lọc của bạn',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _selectedGenreSlugs.clear();
+                                _selectedStatusValues.clear();
+                              });
+                              _loadLocalPage(1);
+                            },
+                            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                            label: const Text(
+                              'Đặt lại bộ lọc',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFC62828),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: localComics.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.5,
+                      ),
+                      itemBuilder: (context, index) {
+                        final comic = localComics[index];
+                        if (!provider.latestChapterNames.containsKey(comic.slug)) {
+                          Future.microtask(() => provider.loadLatestChapter(comic.slug));
+                          return ComicCard(
+                            comic: comic,
+                            subtitle: 'Đang tải',
+                          );
+                        }
+                        return ComicCard(
+                          comic: comic,
+                          subtitle: _formatSubtitle(provider.latestChapterNames[comic.slug]),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: _localPage > 1
+                                  ? () => _loadLocalPage(_localPage - 1)
+                                  : null,
+                              icon: const Icon(Icons.chevron_left_rounded),
+                              color: const Color(0xFFC62828),
+                              disabledColor: Colors.black26,
+                              style: IconButton.styleFrom(
+                                backgroundColor: _localPage > 1
+                                    ? const Color(0xFFC62828).withOpacity(0.1)
+                                    : Colors.transparent,
+                                padding: const EdgeInsets.all(8),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFC62828),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFC62828).withOpacity(0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Trang $_localPage',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              onPressed: () => _loadLocalPage(_localPage + 1),
+                              icon: const Icon(Icons.chevron_right_rounded),
+                              color: const Color(0xFFC62828),
+                              style: IconButton.styleFrom(
+                                backgroundColor: const Color(0xFFC62828).withOpacity(0.1),
+                                padding: const EdgeInsets.all(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+          ),
+        ],
+      ),
       bottomNavigationBar: widget.showBottomNav
           ? BottomNavigationBar(
               currentIndex: 1,
@@ -439,57 +727,3 @@ class _StatusOption {
   });
 }
 
-class _StatusChipColors {
-  final Color background;
-  final Color selectedBackground;
-  final Color border;
-  final Color text;
-  final Color selectedText;
-
-  const _StatusChipColors({
-    required this.background,
-    required this.selectedBackground,
-    required this.border,
-    required this.text,
-    required this.selectedText,
-  });
-}
-
-extension _StatusChipStyle on _FilterScreenState {
-  _StatusChipColors _statusChipColors(String status) {
-    switch (status) {
-      case 'ongoing':
-        return const _StatusChipColors(
-          background: Color(0xFFE3F2FD),
-          selectedBackground: Color(0xFF1565C0),
-          border: Color(0xFF1565C0),
-          text: Color(0xFF0D47A1),
-          selectedText: Colors.white,
-        );
-      case 'coming_soon':
-        return const _StatusChipColors(
-          background: Color(0xFFE8F5E9),
-          selectedBackground: Color(0xFF1B5E20),
-          border: Color(0xFF1B5E20),
-          text: Color(0xFF1B5E20),
-          selectedText: Colors.white,
-        );
-      case 'completed':
-        return const _StatusChipColors(
-          background: Color(0xFFFFF3E0),
-          selectedBackground: Color(0xFFF57C00),
-          border: Color(0xFFF57C00),
-          text: Color(0xFFE65100),
-          selectedText: Colors.white,
-        );
-      default:
-        return const _StatusChipColors(
-          background: Color(0xFFF5F5F5),
-          selectedBackground: Color(0xFF424242),
-          border: Color(0xFF9E9E9E),
-          text: Color(0xFF424242),
-          selectedText: Colors.white,
-        );
-    }
-  }
-}

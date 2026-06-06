@@ -24,7 +24,7 @@ class ComicCard extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.none,
         elevation: 0,
-        color: const Color(0xFFEBEBEB),
+        color: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.zero,
         ),

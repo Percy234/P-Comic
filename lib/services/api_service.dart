@@ -122,4 +122,19 @@ class ApiService {
       );
     }
   }
+
+  Future<ComicResponse> searchComics(String keyword, int page) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/tim-kiem?keyword=$keyword&page=$page'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return ComicResponse.fromJson(data);
+    } else {
+      throw Exception(
+        'Lỗi khi tìm kiếm truyện',
+      );
+    }
+  }
 }

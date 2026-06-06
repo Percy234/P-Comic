@@ -7,10 +7,12 @@ class ComicProvider extends ChangeNotifier {
   List<Comic> homeComics = [];
   List<Comic> pagedComics = [];
   List<Comic> randomComics = [];
+  List<Comic> searchedComics = [];
   // cache latest chapter name by comic slug
   final Map<String, String> latestChapterNames = {};
   bool _randomized = false;
   bool isLoading = false;
+  bool isSearchLoading = false;
   int currentPage = 1;
   int totalItems = 0;
   int totalPerPage = 24;
@@ -85,5 +87,25 @@ class ComicProvider extends ChangeNotifier {
       latestChapterNames[slug] = '';
       notifyListeners();
     }
+  }
+
+  Future<void> searchComics(String keyword) async {
+    if (keyword.trim().isEmpty) {
+      searchedComics = [];
+      isSearchLoading = false;
+      notifyListeners();
+      return;
+    }
+    isSearchLoading = true;
+    notifyListeners();
+    try {
+      final response = await _apiService.searchComics(keyword.trim(), 1);
+      searchedComics = response.comics;
+    } catch (e) {
+      print('Error searching comics: $e');
+      searchedComics = [];
+    }
+    isSearchLoading = false;
+    notifyListeners();
   }
 } 
