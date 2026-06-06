@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../database/database_helper.dart';
 
 class FavoriteProvider extends ChangeNotifier {
@@ -6,8 +7,19 @@ class FavoriteProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> favorites = [];
 
+  FavoriteProvider() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      loadFavorites();
+    });
+  }
+
   Future<void> loadFavorites() async {
-    favorites = await _db.getFavorites();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      favorites = [];
+    } else {
+      favorites = await _db.getFavorites(user.uid);
+    }
     notifyListeners();
   }
 
@@ -23,17 +35,21 @@ class FavoriteProvider extends ChangeNotifier {
     required String slug,
     required String thumbUrl,
   }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return; // Chỉ cho phép thích khi đã đăng nhập
+    
     try {
       final exists = isFavoriteComic(comicId);
 
       if (exists) {
-        await _db.removeFavorite(comicId);
+        await _db.removeFavorite(user.uid, comicId);
 
         favorites.removeWhere(
           (item) => item['comicId'] == comicId,
         );
       } else {
         await _db.insertFavoriteData(
+          userId: user.uid,
           comicId: comicId,
           name: name,
           slug: slug,
@@ -41,6 +57,7 @@ class FavoriteProvider extends ChangeNotifier {
         );
 
         favorites.insert(0, {
+          'userId': user.uid,
           'comicId': comicId,
           'name': name,
           'slug': slug,
@@ -56,7 +73,10 @@ class FavoriteProvider extends ChangeNotifier {
   }
 
   Future<void> removeFavoriteById(String comicId) async {
-    await _db.removeFavorite(comicId);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await _db.removeFavorite(user.uid, comicId);
 
     favorites.removeWhere(
       (item) => item['comicId'] == comicId,

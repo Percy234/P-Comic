@@ -1,5 +1,4 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import '../models/comic_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -21,22 +20,16 @@ class DatabaseHelper {
   Box get _historiesBox => Hive.box(_historiesBoxName);
 
   // --- FAVORITES ---
-  Future<void> insertFavorite(Comic comic) async {
-    await insertFavoriteData(
-      comicId: comic.id,
-      name: comic.name,
-      slug: comic.slug,
-      thumbUrl: comic.thumbUrl,
-    );
-  }
-
   Future<void> insertFavoriteData({
+    required String userId,
     required String comicId,
     required String name,
     required String slug,
     required String thumbUrl,
   }) async {
-    await _favoritesBox.put(comicId, {
+    final key = '${userId}_$comicId';
+    await _favoritesBox.put(key, {
+      'userId': userId,
       'comicId': comicId,
       'name': name,
       'slug': slug,
@@ -45,13 +38,17 @@ class DatabaseHelper {
     });
   }
 
-  Future<void> removeFavorite(String comicId) async {
-    await _favoritesBox.delete(comicId);
+  Future<void> removeFavorite(String userId, String comicId) async {
+    final key = '${userId}_$comicId';
+    await _favoritesBox.delete(key);
   }
 
-  Future<List<Map<String, dynamic>>> getFavorites() async {
+  Future<List<Map<String, dynamic>>> getFavorites(String userId) async {
     final rawData = _favoritesBox.values;
-    final list = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = rawData
+        .where((e) => e is Map && e['userId'] == userId)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
     
     // Sắp xếp theo addedAt mới nhất lên đầu
     list.sort((a, b) {
@@ -62,18 +59,22 @@ class DatabaseHelper {
     return list;
   }
 
-  Future<bool> isFavorite(String comicId) async {
-    return _favoritesBox.containsKey(comicId);
+  Future<bool> isFavorite(String userId, String comicId) async {
+    final key = '${userId}_$comicId';
+    return _favoritesBox.containsKey(key);
   }
 
   // --- HISTORIES ---
   Future<void> insertHistoryData({
+    required String userId,
     required String comicId,
     required String name,
     required String slug,
     required String thumbUrl,
   }) async {
-    await _historiesBox.put(comicId, {
+    final key = '${userId}_$comicId';
+    await _historiesBox.put(key, {
+      'userId': userId,
       'comicId': comicId,
       'name': name,
       'slug': slug,
@@ -82,11 +83,13 @@ class DatabaseHelper {
     });
   }
 
-  Future<List<Map<String, dynamic>>> getHistories() async {
+  Future<List<Map<String, dynamic>>> getHistories(String userId) async {
     final rawData = _historiesBox.values;
-    final list = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = rawData
+        .where((e) => e is Map && e['userId'] == userId)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
     
-    // Sắp xếp theo visitedAt mới nhất lên đầu
     list.sort((a, b) {
       final aDate = DateTime.tryParse(a['visitedAt'] ?? '') ?? DateTime.now();
       final bDate = DateTime.tryParse(b['visitedAt'] ?? '') ?? DateTime.now();

@@ -6,7 +6,9 @@ import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
 import '../models/comic_model.dart';
 import '../providers/detail_provider.dart';
+import '../providers/auth_provider.dart';
 import 'reading_screen.dart';
+import 'login_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final Comic comic;
@@ -108,11 +110,11 @@ class _DetailScreenState extends State<DetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            // Sharp Cover Image (70% of screen width)
+                            // Sharp Cover Image (60% of screen width)
                             Builder(
                               builder: (context) {
                                 final screenWidth = MediaQuery.of(context).size.width;
-                                final coverWidth = screenWidth * 0.70;
+                                final coverWidth = screenWidth * 0.60;
                                 final coverHeight = coverWidth * 1.45;
                                 return Container(
                                   width: coverWidth,
@@ -267,6 +269,165 @@ class _DetailScreenState extends State<DetailScreen> {
                                     : const Color(0xFFFF9EBE),
 
                                 onPressed: () async {
+                                  final auth = context.read<AuthProvider>();
+                                  if (!auth.isLoggedIn) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(24),
+                                        ),
+                                        elevation: 10,
+                                        backgroundColor: Colors.white,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Beautiful icon container with gradient ring and shadow
+                                              Container(
+                                                width: 76,
+                                                height: 76,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: const LinearGradient(
+                                                    colors: [Color(0xFFFFE0B2), Color(0xFFFFF3E0)],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(0xFFF57C00).withOpacity(0.12),
+                                                      blurRadius: 16,
+                                                      offset: const Offset(0, 6),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Center(
+                                                  child: Container(
+                                                    width: 52,
+                                                    height: 52,
+                                                    decoration: const BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      gradient: LinearGradient(
+                                                        colors: [Color(0xFFFF9800), Color(0xFFE65100)],
+                                                        begin: Alignment.topLeft,
+                                                        end: Alignment.bottomRight,
+                                                      ),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.favorite_rounded,
+                                                      color: Colors.white,
+                                                      size: 28,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              // Title
+                                              const Text(
+                                                'Yêu cầu đăng nhập',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: Colors.black87,
+                                                  letterSpacing: -0.5,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 12),
+                                              // Description
+                                              Text(
+                                                'Vui lòng đăng nhập tài khoản để lưu lại truyện yêu thích và đồng bộ hóa tủ sách của bạn.',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[600],
+                                                  height: 1.5,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 24),
+                                              // Action Buttons
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: InkWell(
+                                                      onTap: () => Navigator.pop(context),
+                                                      hoverColor: const Color(0xFFFFCDD2), // Đỏ nhạt đậm hơn chút khi hover
+                                                      borderRadius: BorderRadius.circular(14),
+                                                      child: Ink(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.grey[50],
+                                                          borderRadius: BorderRadius.circular(14),
+                                                          border: Border.all(color: Colors.grey[200]!),
+                                                        ),
+                                                        child: Container(
+                                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                                          alignment: Alignment.center,
+                                                          child: Text(
+                                                            'Để sau',
+                                                            style: TextStyle(
+                                                              color: Colors.grey[600],
+                                                              fontWeight: FontWeight.w600,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: InkWell(
+                                                      onTap: () {
+                                                        Navigator.pop(context);
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) => const LoginScreen(),
+                                                          ),
+                                                        );
+                                                      },
+                                                      borderRadius: BorderRadius.circular(14),
+                                                      child: Ink(
+                                                        decoration: BoxDecoration(
+                                                          gradient: const LinearGradient(
+                                                            colors: [Color(0xFFF57C00), Color(0xFFE65100)],
+                                                            begin: Alignment.topLeft,
+                                                            end: Alignment.bottomRight,
+                                                          ),
+                                                          borderRadius: BorderRadius.circular(14),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: const Color(0xFFE65100).withOpacity(0.25),
+                                                              blurRadius: 10,
+                                                              offset: const Offset(0, 4),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Container(
+                                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                                          alignment: Alignment.center,
+                                                          child: const Text(
+                                                            'Đăng nhập',
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.w700,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   await favoriteProvider.toggleFavorite(
                                     comicId: widget.comic.id,
                                     name: widget.comic.name,
