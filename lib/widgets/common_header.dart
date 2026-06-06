@@ -112,7 +112,7 @@ class _CommonHeaderState extends State<CommonHeader> {
         const SizedBox(width: 8),
         if (auth.isLoggedIn) ...[
           Text(
-            'Chào, ${auth.user?.email?.split('@').first ?? 'User'}',
+            '${auth.user?.email?.split('@').first ?? 'User'}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
