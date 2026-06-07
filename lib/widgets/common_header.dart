@@ -111,14 +111,24 @@ class _CommonHeaderState extends State<CommonHeader> {
         ),
         const SizedBox(width: 8),
         if (auth.isLoggedIn) ...[
-          Text(
-            '${auth.user?.email?.split('@').first ?? 'User'}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF57C00),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                (auth.user?.email?.isNotEmpty ?? false)
+                    ? auth.user!.email![0].toUpperCase()
+                    : 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ] else if (widget.showAuthButtons) ...[

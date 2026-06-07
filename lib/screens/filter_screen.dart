@@ -6,6 +6,7 @@ import '../widgets/background_decorations.dart';
 import '../models/comic_genre_model.dart';
 import '../models/comic_response_model.dart';
 import '../providers/comic_provider.dart';
+import '../providers/filter_provider.dart';
 import '../widgets/comic_card.dart';
 import '../widgets/common_header.dart';
 import '../services/api_service.dart';
@@ -41,6 +42,8 @@ class _FilterScreenState extends State<FilterScreen> {
   bool _genresExpanded = false;
   bool _loadingLocal = false;
   int _localPage = 1;
+  Set<String> _lastProviderStatuses = {};
+  bool _lastExpandGenres = false;
 
   static const int _statusPageBatchSize = 3;
 
@@ -192,12 +195,37 @@ class _FilterScreenState extends State<FilterScreen> {
     if (raw == null || raw.trim().isEmpty) return 'Sắp ra';
     final match = RegExp(r'(\d+)').firstMatch(raw);
     if (match != null) return 'Chương ${match.group(1)}';
-    return raw;
-  }
+      return raw;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<ComicProvider>();
+    @override
+    Widget build(BuildContext context) {
+      final filterProvider = context.watch<FilterProvider>();
+      final provider = context.watch<ComicProvider>();
+      if (_lastProviderStatuses.toString() !=
+            filterProvider.selectedStatuses.toString() ||
+        _lastExpandGenres != filterProvider.expandGenres) {
+
+      _lastProviderStatuses =
+          Set.from(filterProvider.selectedStatuses);
+
+      _lastExpandGenres =
+          filterProvider.expandGenres;
+
+      _selectedStatusValues
+        ..clear()
+        ..addAll(filterProvider.selectedStatuses);
+
+      _genresExpanded =
+          filterProvider.expandGenres;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadLocalPage(1);
+        }
+      });
+    }
+  
     final hasActiveFilters = _selectedGenreSlugs.isNotEmpty || _selectedStatusValues.isNotEmpty;
 
     return Scaffold(

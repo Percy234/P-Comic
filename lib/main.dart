@@ -11,6 +11,7 @@ import 'providers/reading_provider.dart';
 import 'providers/favorite_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/filter_provider.dart';
 import 'screens/main_shell.dart';
 
 void main() async {
@@ -30,6 +31,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => FilterProvider()),
       ],
       child: const MyApp(),
     ),

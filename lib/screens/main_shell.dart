@@ -15,13 +15,35 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int currentIndex = 0;
 
-  final List<Widget> pages = const [
-    HomeScreen(),
-    FilterScreen(filterTitle: 'Thể loại', showBottomNav: false),
-    FavoriteScreen(),
-    HistoryScreen(),
-    ProfileScreen(),
-  ];
+  late final List<Widget> pages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pages = [
+      HomeScreen(
+        onChangeTab: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+      ),
+      const FilterScreen(
+        filterTitle: 'Thể loại',
+        showBottomNav: false,
+      ),
+      const FavoriteScreen(),
+      const HistoryScreen(),
+      ProfileScreen(
+        onChangeTab: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

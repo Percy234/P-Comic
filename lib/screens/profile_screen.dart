@@ -10,7 +10,8 @@ import 'login_screen.dart';
 import 'register_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final Function(int)? onChangeTab;
+  const ProfileScreen({super.key, this.onChangeTab});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -327,13 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: 'Danh sách yêu thích',
           subtitle: 'Xem các bộ truyện bạn đã lưu thích',
           onTap: () {
-            // Notification or info about using bottom navigation
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Chuyển qua tab "Yêu Thích" ở thanh điều hướng để xem chi tiết.'),
-                duration: Duration(seconds: 2),
-              ),
-            );
+            widget.onChangeTab?.call(2);
           },
         ),
         const SizedBox(height: 12),
@@ -343,12 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: 'Lịch sử đọc truyện',
           subtitle: 'Theo dõi tiến trình đọc của bạn',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Chuyển qua tab "Lịch sử" ở thanh điều hướng để xem chi tiết.'),
-                duration: Duration(seconds: 2),
-              ),
-            );
+            widget.onChangeTab?.call(3);
           },
         ),
         const SizedBox(height: 12),

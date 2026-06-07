@@ -5,9 +5,11 @@ import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
 import '../widgets/common_header.dart';
 import 'filter_screen.dart';
+import '../providers/filter_provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(int)? onChangeTab;
+  const HomeScreen({super.key, this.onChangeTab});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -43,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 3 hình tròn trang trí nền to hơn trải dài từ header đến footer (đậm hơn)
           Positioned(
             top: -100,
             right: -100,
@@ -135,16 +136,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: 'Thể loại',
                                   colors: [const Color(0xFFE53935), const Color(0xFFE35D5B)],
                                   icon: Icons.category_rounded,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const FilterScreen(
-                                        filterTitle: 'Thể loại',
-                                        expandGenres: true,
-                                        showBottomNav: false,
-                                      ),
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    context.read<FilterProvider>().openGenres();
+                                    widget.onChangeTab?.call(1);
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -154,16 +149,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: 'Đang phát hành',
                                   colors: [const Color(0xFF1E88E5), const Color(0xFF42A5F5)],
                                   icon: Icons.play_circle_fill_rounded,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const FilterScreen(
-                                        filterTitle: 'Thể loại',
-                                        initialStatuses: ['ongoing'],
-                                        showBottomNav: false,
-                                      ),
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    context.read<FilterProvider>().setStatus('ongoing');
+                                    widget.onChangeTab?.call(1);
+                                  },
                                 ),
                               ),
                             ],
@@ -177,16 +166,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: 'Sắp ra mắt',
                                   colors: [const Color(0xFF43A047), const Color(0xFF66BB6A)],
                                   icon: Icons.upcoming_rounded,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const FilterScreen(
-                                        filterTitle: 'Thể loại',
-                                        initialStatuses: ['coming_soon'],
-                                        showBottomNav: false,
-                                      ),
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    context.read<FilterProvider>().setStatus('coming_soon');
+                                    widget.onChangeTab?.call(1);
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -196,16 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: 'Đã hoàn thành',
                                   colors: [const Color(0xFFF4511E), const Color(0xFFFF7043)],
                                   icon: Icons.verified_rounded,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const FilterScreen(
-                                        filterTitle: 'Thể loại',
-                                        initialStatuses: ['completed'],
-                                        showBottomNav: false,
-                                      ),
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    context.read<FilterProvider>().setStatus('completed');
+                                    widget.onChangeTab?.call(1);
+                                  },
                                 ),
                               ),
                             ],
@@ -320,17 +297,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(24)),
                             ),
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const FilterScreen(
-                                    filterTitle: 'Thể loại',
-                                    startPage: 2,
-                                    expandGenres: true,
-                                    showBottomNav: true,
-                                  ),
-                                ),
-                              );
+                              context.read<FilterProvider>().openGenres();
+                              widget.onChangeTab?.call(1);
                             },
                             icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
                             label: const Text(
