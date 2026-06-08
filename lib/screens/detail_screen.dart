@@ -89,21 +89,10 @@ class _DetailScreenState extends State<DetailScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Top Navigation
-                            SafeArea(
+                            const SafeArea(
                               bottom: false,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: _HeaderIconButton(
-                                    icon: Icons.arrow_back,
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                ),
-                              ),
+                              child: SizedBox(height: 48),
                             ),
-                            const SizedBox(height: 10),
                             // Sharp Cover Image (60% of screen width)
                             Builder(
                               builder: (context) {
@@ -507,25 +496,41 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Danh sách chương',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.onSurface,
+                          Container(
+                            width: 4,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF57C00),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
-                          Text(
-                            '${comic.chapters.length} chương',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white60
-                                  : Colors.black54,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Danh sách chương',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                Text(
+                                  '${comic.chapters.length} chương',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white60
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -566,85 +571,125 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                     )
                   else
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final chapter = comic.chapters[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0xFF1B5E20).withOpacity(0.08),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                        child: Container(
+                          height: 320,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.08)
+                                  : const Color(0xFF1B5E20).withOpacity(0.08),
+                              width: 1,
                             ),
-                            child: ListTile(
-                              leading: Container(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.dark
-                                      ? const Color(0xFF1B5E20).withOpacity(0.2)
-                                      : const Color(0xFFE8F5E9),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF81C784)
-                                        : const Color(0xFF1B5E20),
-                                  ),
-                                ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
                               ),
-                              title: Text(
-                                chapter.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: ListView.separated(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: comic.chapters.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white.withOpacity(0.06)
+                                    : Colors.black.withOpacity(0.04),
+                                indent: 16,
+                                endIndent: 16,
                               ),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ReadingScreen(
-                                      apiUrl: chapter.apiData,
-                                      comicId: widget.comic.id,
-                                      name: comic.name,
-                                      slug: widget.comic.slug,
-                                      thumbUrl: comic.thumbUrl,
-                                      chapterName: chapter.name,
+                              itemBuilder: (context, index) {
+                                final chapter = comic.chapters[comic.chapters.length - 1 - index];
+                                final rawName = chapter.name;
+                                final displayChapterName = rawName.toLowerCase().startsWith('chương') || 
+                                                           rawName.toLowerCase().startsWith('chap')
+                                    ? rawName
+                                    : 'Chương $rawName';
+                                
+                                final formattedDate = _formatDate(widget.comic.updatedAt);
+
+                                return ListTile(
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  title: Text(
+                                    displayChapterName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
                                     ),
                                   ),
+                                  trailing: Text(
+                                    formattedDate,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ReadingScreen(
+                                          apiUrl: chapter.apiData,
+                                          comicId: widget.comic.id,
+                                          name: comic.name,
+                                          slug: widget.comic.slug,
+                                          thumbUrl: comic.thumbUrl,
+                                          chapterName: chapter.name,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),
-                          );
-                        }, childCount: comic.chapters.length),
+                          ),
+                        ),
                       ),
                     ),
                 ],
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: _HeaderIconButton(
+                      icon: Icons.arrow_back,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
               ),
             ],
           );
         },
       ),
     );
+  }
+
+  static String _formatDate(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    try {
+      final dateTime = DateTime.parse(raw);
+      final day = dateTime.day.toString().padLeft(2, '0');
+      final month = dateTime.month.toString().padLeft(2, '0');
+      final year = dateTime.year;
+      return '$day/$month/$year';
+    } catch (_) {
+      return '';
+    }
   }
 
   static String _formatStatus(String raw) {
@@ -756,14 +801,16 @@ class _HeaderIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withOpacity(0.35),
+      color: const Color(0xFFF57C00),
       shape: const CircleBorder(),
+      elevation: 4,
+      shadowColor: const Color(0xFFF57C00).withOpacity(0.3),
       child: InkWell(
         onTap: onPressed,
         customBorder: const CircleBorder(),
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: iconColor, size: 20),
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: iconColor, size: 22),
         ),
       ),
     );
