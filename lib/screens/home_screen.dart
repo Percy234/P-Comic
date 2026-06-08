@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
 import '../widgets/common_header.dart';
-import 'filter_screen.dart';
 import '../providers/filter_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -194,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Theme.of(context).cardColor.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
@@ -317,10 +316,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(16),
                         margin: const EdgeInsets.only(top: 24, bottom: 12),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade50.withOpacity(0.6),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.amber.shade900.withOpacity(0.15)
+                              : Colors.amber.shade50.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.amber.shade200,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.amber.shade800.withOpacity(0.4)
+                                : Colors.amber.shade200,
                             width: 1,
                           ),
                         ),
@@ -329,11 +332,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Icon(
                               Icons.info_outline_rounded,
-                              color: Colors.amber.shade800,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.amber.shade200
+                                  : Colors.amber.shade800,
                               size: 20,
                             ),
                             const SizedBox(width: 10),
-                            const Expanded(
+                            Expanded(
                               child: Text.rich(
                                 TextSpan(
                                   children: [
@@ -341,7 +346,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       text: 'Lưu ý: ',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.amber,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.amber.shade200
+                                            : Colors.amber,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -350,7 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           'Nội dung truyện trên ứng dụng được tổng hợp từ nhiều nguồn công khai trên Internet, chỉ nhằm mục đích giải trí. Mọi bản quyền thuộc về tác giả và nhà phát hành.',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.black87,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.white70
+                                            : Colors.black87,
                                         height: 1.4,
                                       ),
                                     ),

@@ -34,6 +34,8 @@ class FavoriteProvider extends ChangeNotifier {
     required String name,
     required String slug,
     required String thumbUrl,
+    String? author,
+    String? genres,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return; // Chỉ cho phép thích khi đã đăng nhập
@@ -54,6 +56,8 @@ class FavoriteProvider extends ChangeNotifier {
           name: name,
           slug: slug,
           thumbUrl: thumbUrl,
+          author: author,
+          genres: genres,
         );
 
         favorites.insert(0, {
@@ -62,6 +66,8 @@ class FavoriteProvider extends ChangeNotifier {
           'name': name,
           'slug': slug,
           'thumbUrl': thumbUrl,
+          'author': author ?? 'Đang cập nhật',
+          'genres': genres ?? '',
           'addedAt': DateTime.now().toIso8601String(),
         });
       }

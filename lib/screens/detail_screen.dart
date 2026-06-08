@@ -25,14 +25,6 @@ class _DetailScreenState extends State<DetailScreen> {
     Future.microtask(() {
       context.read<DetailProvider>().loadDetail(widget.comic.slug);
     });
-    Future.microtask(() {
-      context.read<HistoryProvider>().recordHistory(
-        comicId: widget.comic.id,
-        name: widget.comic.name,
-        slug: widget.comic.slug,
-        thumbUrl: widget.comic.thumbUrl,
-      );
-    });
   }
 
   @override
@@ -52,11 +44,13 @@ class _DetailScreenState extends State<DetailScreen> {
           return Stack(
             children: [
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFF6FFF6), Color(0xFFF4F1E7)],
+                    colors: Theme.of(context).brightness == Brightness.dark
+                        ? [const Color(0xFF121212), const Color(0xFF1E1E1E)]
+                        : [const Color(0xFFF6FFF6), const Color(0xFFF4F1E7)],
                   ),
                 ),
               ),
@@ -213,8 +207,12 @@ class _DetailScreenState extends State<DetailScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => ReadingScreen(
-                                            apiUrl:
-                                                comic.chapters.first.apiData,
+                                            apiUrl: comic.chapters.first.apiData,
+                                            comicId: widget.comic.id,
+                                            name: comic.name,
+                                            slug: widget.comic.slug,
+                                            thumbUrl: comic.thumbUrl,
+                                            chapterName: comic.chapters.first.name,
                                           ),
                                         ),
                                       );
@@ -235,6 +233,11 @@ class _DetailScreenState extends State<DetailScreen> {
                                         MaterialPageRoute(
                                           builder: (_) => ReadingScreen(
                                             apiUrl: comic.chapters.last.apiData,
+                                            comicId: widget.comic.id,
+                                            name: comic.name,
+                                            slug: widget.comic.slug,
+                                            thumbUrl: comic.thumbUrl,
+                                            chapterName: comic.chapters.last.name,
                                           ),
                                         ),
                                       );
@@ -278,7 +281,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                           borderRadius: BorderRadius.circular(24),
                                         ),
                                         elevation: 10,
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: Theme.of(context).cardColor,
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                                           child: Column(
@@ -325,12 +328,14 @@ class _DetailScreenState extends State<DetailScreen> {
                                               ),
                                               const SizedBox(height: 20),
                                               // Title
-                                              const Text(
+                                              Text(
                                                 'Yêu cầu đăng nhập',
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Colors.black87,
+                                                  color: Theme.of(context).brightness == Brightness.dark
+                                                      ? Colors.white
+                                                      : Colors.black87,
                                                   letterSpacing: -0.5,
                                                 ),
                                               ),
@@ -354,12 +359,18 @@ class _DetailScreenState extends State<DetailScreen> {
                                                       onTap: () => Navigator.pop(context),
                                                       hoverColor: const Color(0xFFFFCDD2), // Đỏ nhạt đậm hơn chút khi hover
                                                       borderRadius: BorderRadius.circular(14),
-                                                      child: Ink(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.grey[50],
-                                                          borderRadius: BorderRadius.circular(14),
-                                                          border: Border.all(color: Colors.grey[200]!),
-                                                        ),
+                                                        child: Ink(
+                                                          decoration: BoxDecoration(
+                                                            color: Theme.of(context).brightness == Brightness.dark
+                                                                ? Colors.grey[800]
+                                                                : Colors.grey[50],
+                                                            borderRadius: BorderRadius.circular(14),
+                                                            border: Border.all(
+                                                              color: Theme.of(context).brightness == Brightness.dark
+                                                                  ? Colors.grey[700]!
+                                                                  : Colors.grey[200]!,
+                                                            ),
+                                                          ),
                                                         child: Container(
                                                           padding: const EdgeInsets.symmetric(vertical: 14),
                                                           alignment: Alignment.center,
@@ -433,6 +444,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                     name: widget.comic.name,
                                     slug: widget.comic.slug,
                                     thumbUrl: widget.comic.thumbUrl,
+                                    author: comic.author,
+                                    genres: comic.categories.map((c) => c.name).join(', '),
                                   );
                                 },
                               );
@@ -448,7 +461,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
@@ -470,10 +483,12 @@ class _DetailScreenState extends State<DetailScreen> {
                             ),
                             const SizedBox(height: 12),
                             DefaultTextStyle(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 height: 1.4,
-                                color: Colors.black87,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black87,
                               ),
                               child: Html(
                                 data: comic.content,
@@ -506,9 +521,11 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                           Text(
                             '${comic.chapters.length} chương',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Colors.black54,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white60
+                                  : Colors.black54,
                             ),
                           ),
                         ],
@@ -522,7 +539,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 24),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: const Color(0xFF1B5E20).withOpacity(0.08),
@@ -557,7 +574,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: const Color(0xFF1B5E20).withOpacity(0.08),
@@ -576,14 +593,18 @@ class _DetailScreenState extends State<DetailScreen> {
                                 height: 40,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE8F5E9),
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? const Color(0xFF1B5E20).withOpacity(0.2)
+                                      : const Color(0xFFE8F5E9),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   '${index + 1}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1B5E20),
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? const Color(0xFF81C784)
+                                        : const Color(0xFF1B5E20),
                                   ),
                                 ),
                               ),
@@ -601,8 +622,14 @@ class _DetailScreenState extends State<DetailScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        ReadingScreen(apiUrl: chapter.apiData),
+                                    builder: (_) => ReadingScreen(
+                                      apiUrl: chapter.apiData,
+                                      comicId: widget.comic.id,
+                                      name: comic.name,
+                                      slug: widget.comic.slug,
+                                      thumbUrl: comic.thumbUrl,
+                                      chapterName: chapter.name,
+                                    ),
                                   ),
                                 );
                               },

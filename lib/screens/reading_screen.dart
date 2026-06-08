@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/reading_provider.dart';
+import '../providers/history_provider.dart';
 
 class ReadingScreen extends StatefulWidget {
   final String apiUrl;
+  final String comicId;
+  final String name;
+  final String slug;
+  final String thumbUrl;
+  final String chapterName;
+
   const ReadingScreen({
     super.key,
     required this.apiUrl,
+    required this.comicId,
+    required this.name,
+    required this.slug,
+    required this.thumbUrl,
+    required this.chapterName,
   });
 
   @override
@@ -21,6 +33,15 @@ class _ReadingScreenState extends State<ReadingScreen> {
       context
           .read<ReadingProvider>()
           .loadChapter(widget.apiUrl);
+    });
+    Future.microtask(() {
+      context.read<HistoryProvider>().recordHistory(
+            comicId: widget.comicId,
+            name: widget.name,
+            slug: widget.slug,
+            thumbUrl: widget.thumbUrl,
+            chapterName: widget.chapterName,
+          );
     });
   }
   @override

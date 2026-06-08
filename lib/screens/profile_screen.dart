@@ -101,7 +101,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 96,
           height: 96,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Theme.of(context).cardColor.withOpacity(0.9)
+                : Colors.white.withOpacity(0.9),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -110,7 +112,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 offset: const Offset(0, 8),
               ),
             ],
-            border: Border.all(color: Colors.grey[200]!, width: 2),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[800]!
+                  : Colors.grey[200]!,
+              width: 2,
+            ),
           ),
           child: Icon(
             Icons.account_circle_rounded,
@@ -119,12 +126,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Chưa Đăng Nhập',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
             letterSpacing: -0.5,
           ),
         ),
@@ -136,7 +145,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[400]
+                  : Colors.grey[600],
               height: 1.5,
             ),
           ),
@@ -383,23 +394,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFEBEE),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFFC62828).withOpacity(0.15)
+                  : const Color(0xFFFFEBEE),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFFCDD2)),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFFC62828).withOpacity(0.3)
+                    : const Color(0xFFFFCDD2),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(
                   Icons.logout_rounded,
-                  color: Color(0xFFC62828),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFFE57373)
+                      : const Color(0xFFC62828),
                   size: 20,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Đăng xuất',
                   style: TextStyle(
-                    color: Color(0xFFC62828),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFFE57373)
+                        : const Color(0xFFC62828),
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -454,7 +475,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white.withOpacity(0.85),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).cardColor.withOpacity(0.85)
+          : Colors.white.withOpacity(0.85),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -482,10 +505,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -493,7 +518,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
                       ),
                     ),
                   ],

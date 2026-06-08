@@ -257,7 +257,7 @@ class _FilterScreenState extends State<FilterScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Theme.of(context).cardColor.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -334,7 +334,9 @@ class _FilterScreenState extends State<FilterScreen> {
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.blueGrey[800],
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? Colors.grey[200]
+                                              : Colors.blueGrey[800],
                                         ),
                                       ),
                                       if (_selectedGenreSlugs.isNotEmpty)
@@ -360,7 +362,12 @@ class _FilterScreenState extends State<FilterScreen> {
                                 AnimatedRotation(
                                   turns: _genresExpanded ? 0.5 : 0,
                                   duration: const Duration(milliseconds: 180),
-                                  child: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey[600]),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.grey[400]
+                                        : Colors.blueGrey[600],
+                                  ),
                                 ),
                               ],
                             ),
@@ -399,10 +406,18 @@ class _FilterScreenState extends State<FilterScreen> {
                                                   end: Alignment.bottomRight,
                                                 )
                                               : null,
-                                          color: selected ? null : Colors.grey[100],
+                                          color: selected
+                                              ? null
+                                              : Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.grey[850]
+                                                  : Colors.grey[100],
                                           borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
-                                            color: selected ? Colors.transparent : Colors.black12,
+                                            color: selected
+                                                ? Colors.transparent
+                                                : Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.grey[800]!
+                                                    : Colors.black12,
                                             width: 1,
                                           ),
                                           boxShadow: selected
@@ -418,7 +433,11 @@ class _FilterScreenState extends State<FilterScreen> {
                                         child: Text(
                                           genre.name,
                                           style: TextStyle(
-                                            color: selected ? Colors.white : Colors.black87,
+                                            color: selected
+                                                ? Colors.white
+                                                : Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.white70
+                                                    : Colors.black87,
                                             fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                                             fontSize: 13,
                                           ),
@@ -435,7 +454,12 @@ class _FilterScreenState extends State<FilterScreen> {
                           duration: const Duration(milliseconds: 180),
                         ),
                         const SizedBox(height: 16),
-                        const Divider(height: 1, color: Colors.black12),
+                        Divider(
+                          height: 1,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]
+                              : Colors.black12,
+                        ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -444,7 +468,9 @@ class _FilterScreenState extends State<FilterScreen> {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blueGrey[800],
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[200]
+                                    : Colors.blueGrey[800],
                               ),
                             ),
                             if (_selectedStatusValues.isNotEmpty)
@@ -545,7 +571,7 @@ class _FilterScreenState extends State<FilterScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Theme.of(context).cardColor.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -611,7 +637,9 @@ class _FilterScreenState extends State<FilterScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey[700],
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.grey[300]
+                                        : Colors.grey[700],
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -620,7 +648,9 @@ class _FilterScreenState extends State<FilterScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey[500],
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[500],
                                   ),
                                 ),
                                 const SizedBox(height: 24),
@@ -680,7 +710,7 @@ class _FilterScreenState extends State<FilterScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
@@ -699,7 +729,9 @@ class _FilterScreenState extends State<FilterScreen> {
                                         : null,
                                     icon: const Icon(Icons.chevron_left_rounded),
                                     color: const Color(0xFFC62828),
-                                    disabledColor: Colors.black26,
+                                    disabledColor: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white30
+                                        : Colors.black26,
                                     style: IconButton.styleFrom(
                                       backgroundColor: _localPage > 1
                                           ? const Color(0xFFC62828).withOpacity(0.1)

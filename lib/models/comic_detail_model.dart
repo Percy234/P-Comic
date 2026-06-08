@@ -1,4 +1,5 @@
 import 'chapter_model.dart';
+import 'comic_genre_model.dart';
 
 class ComicDetail {
   final String name;
@@ -7,6 +8,7 @@ class ComicDetail {
   final String status;
   final String thumbUrl;
   final List<Chapter> chapters;
+  final List<ComicGenre> categories;
 
   ComicDetail({
     required this.name,
@@ -15,6 +17,7 @@ class ComicDetail {
     required this.status,
     required this.thumbUrl,
     required this.chapters,
+    required this.categories,
   });
 
   factory ComicDetail.fromJson(Map<String, dynamic> json) {
@@ -23,6 +26,15 @@ class ComicDetail {
       final serverData = json['chapters'][0]['server_data'];
       chapterList = (serverData as List).map((e) => Chapter.fromJson(e)).toList();
     }
+
+    final rawCategories = json['category'];
+    final categoryList = rawCategories is List
+        ? rawCategories
+            .whereType<Map<String, dynamic>>()
+            .map(ComicGenre.fromJson)
+            .toList()
+        : <ComicGenre>[];
+
     return ComicDetail(
       name: json['name'] ?? '',
       author: (json['author'] != null && json['author'].isNotEmpty) ? json['author'][0] : 'Đang cập nhật',
@@ -30,6 +42,7 @@ class ComicDetail {
       status: json['status'] ?? '',
       thumbUrl: json['thumb_url'] ?? '',
       chapters: chapterList,
+      categories: categoryList,
     );
   }
   String get imageUrl => 'https://img.otruyenapi.com/uploads/comics/$thumbUrl';

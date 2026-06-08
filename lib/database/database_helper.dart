@@ -14,6 +14,7 @@ class DatabaseHelper {
     await Hive.openBox(_favoritesBoxName);
     await Hive.openBox(_historiesBoxName);
     await Hive.openBox(_followsBoxName);
+    await Hive.openBox('settings');
   }
 
   Box get _favoritesBox => Hive.box(_favoritesBoxName);
@@ -26,6 +27,8 @@ class DatabaseHelper {
     required String name,
     required String slug,
     required String thumbUrl,
+    String? author,
+    String? genres,
   }) async {
     final key = '${userId}_$comicId';
     await _favoritesBox.put(key, {
@@ -34,6 +37,8 @@ class DatabaseHelper {
       'name': name,
       'slug': slug,
       'thumbUrl': thumbUrl,
+      'author': author ?? 'Đang cập nhật',
+      'genres': genres ?? '',
       'addedAt': DateTime.now().toIso8601String(),
     });
   }
@@ -71,6 +76,7 @@ class DatabaseHelper {
     required String name,
     required String slug,
     required String thumbUrl,
+    required String chapterName,
   }) async {
     final key = '${userId}_$comicId';
     await _historiesBox.put(key, {
@@ -79,6 +85,7 @@ class DatabaseHelper {
       'name': name,
       'slug': slug,
       'thumbUrl': thumbUrl,
+      'chapterName': chapterName,
       'visitedAt': DateTime.now().toIso8601String(),
     });
   }

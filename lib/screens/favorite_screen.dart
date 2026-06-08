@@ -66,6 +66,32 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               ),
                             ),
                           ),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 4,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF57C00),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Truyện yêu thích',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                           if (!auth.isLoggedIn)
                             SliverFillRemaining(
                               hasScrollBody: false,
@@ -112,75 +138,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               ),
                             ),
                           if (auth.isLoggedIn) ...[
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.12),
-                                        blurRadius: 16,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Bộ sưu tập của bạn',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              'Lưu lại những truyện bạn muốn theo dõi lâu dài.',
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(0.9),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(999),
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(0.4),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          '${provider.favorites.length} truyện',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
                             if (provider.favorites.isEmpty)
                               SliverFillRemaining(
                                 hasScrollBody: false,
@@ -214,10 +171,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                           ),
                                         ),
                                         const SizedBox(height: 8),
-                                        const Text(
+                                        Text(
                                           'Hãy lưu lại những bộ truyện bạn muốn theo dõi để xem nhanh ở đây.',
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(color: Colors.black54),
+                                          style: TextStyle(
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? Colors.white54
+                                                : Colors.black54,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -227,23 +188,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             else
                               SliverPadding(
                                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                                sliver: SliverGrid(
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    childAspectRatio: 0.6,
-                                  ),
+                                sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate((context, index) {
                                     final item = provider.favorites[index];
                                     final name = item['name'] ?? '';
                                     final thumbUrl = item['thumbUrl'] ?? '';
+                                    final author = item['author'] ?? 'Đang cập nhật';
+                                    final genres = item['genres'] ?? '';
                                     final addedAt = _formatAddedAt(item['addedAt']);
-                                    return _FavoriteCard(
+                                    return _FavoriteListCard(
                                       name: name,
                                       imageUrl:
                                           'https://img.otruyenapi.com/uploads/comics/$thumbUrl',
+                                      author: author,
+                                      genres: genres,
                                       addedAt: addedAt,
                                       onTap: () {
                                         Navigator.push(
@@ -317,16 +275,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 }
 
-class _FavoriteCard extends StatelessWidget {
+class _FavoriteListCard extends StatelessWidget {
   final String name;
   final String imageUrl;
+  final String author;
+  final String genres;
   final String addedAt;
   final VoidCallback onTap;
   final VoidCallback onRemove;
 
-  const _FavoriteCard({
+  const _FavoriteListCard({
     required this.name,
     required this.imageUrl,
+    required this.author,
+    required this.genres,
     required this.addedAt,
     required this.onTap,
     required this.onRemove,
@@ -334,109 +296,178 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.08),
-      borderRadius: BorderRadius.circular(16),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final subtextColor = isDark ? Colors.grey[400] : Colors.grey[600];
+    final labelColor = isDark ? Colors.white70 : Colors.black87;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: theme.cardColor.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        cacheWidth: 600,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: const Color(0xFFE0E0E0),
-                            child: const Icon(Icons.broken_image, size: 36),
-                          );
-                        },
-                      ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cover image
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    width: 85,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    cacheWidth: 600,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 85,
+                      height: 120,
+                      color: isDark ? Colors.grey[850] : Colors.grey[200],
+                      child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
                     ),
                   ),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        addedAt.isEmpty ? 'Đã lưu' : 'Đã lưu $addedAt',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: InkWell(
-                      onTap: onRemove,
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.favorite,
-                          size: 18,
-                          color: Color(0xFFD32F2F),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
+              const SizedBox(width: 14),
+              // Details Column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title and unfavorite button in a row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: labelColor,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onRemove,
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.favorite,
+                                size: 22,
+                                color: Color(0xFFE53935),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Xem chi tiết',
-                    style: TextStyle(
-                      color: Color(0xFF2E7D32),
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 6),
+                    // Author
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_rounded,
+                          size: 15,
+                          color: subtextColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Tác giả: $author',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: subtextColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    // Genres
+                    if (genres.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.category_rounded,
+                            size: 15,
+                            color: subtextColor,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Thể loại: $genres',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: subtextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    // Saved date
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 15,
+                          color: subtextColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          addedAt.isEmpty ? 'Đã lưu' : 'Đã lưu $addedAt',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: subtextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

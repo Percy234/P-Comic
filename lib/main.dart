@@ -12,6 +12,7 @@ import 'providers/favorite_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/filter_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/main_shell.dart';
 
 void main() async {
@@ -32,6 +33,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -42,14 +44,40 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'P Comic',
+      themeMode: themeProvider.themeMode,
       theme: ThemeData(
+        brightness: Brightness.light,
         fontFamily: 'Cabin',
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFFEBEBEB),
-        cardColor: const Color(0xFFEBEBEB),
+        cardColor: Colors.white,
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFFF57C00),
+          secondary: Colors.blue,
+          surface: Colors.white,
+          background: Color(0xFFEBEBEB),
+          onPrimary: Colors.white,
+          onSurface: Colors.black87,
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        fontFamily: 'Cabin',
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        cardColor: const Color(0xFF1E1E1E),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFF57C00),
+          secondary: Colors.blue,
+          surface: Color(0xFF1E1E1E),
+          background: Color(0xFF121212),
+          onPrimary: Colors.white,
+          onSurface: Colors.white,
+        ),
       ),
       home: const MainShell(),
     );

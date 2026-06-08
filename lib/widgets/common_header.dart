@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/comic_provider.dart';
+import '../providers/theme_provider.dart';
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/detail_screen.dart';
@@ -52,6 +53,7 @@ class _CommonHeaderState extends State<CommonHeader> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
 
     return Row(
       children: [
@@ -59,9 +61,15 @@ class _CommonHeaderState extends State<CommonHeader> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.grey[100],
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]!
+                    : Colors.grey[200]!,
+              ),
             ),
             child: Row(
               children: [
@@ -108,6 +116,21 @@ class _CommonHeaderState extends State<CommonHeader> {
               ],
             ),
           ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: () {
+            themeProvider.toggleTheme();
+          },
+          icon: Icon(
+            themeProvider.isDarkMode
+                ? Icons.wb_sunny_rounded
+                : Icons.dark_mode_rounded,
+            color: themeProvider.isDarkMode ? Colors.amber : Colors.grey[700],
+          ),
+          iconSize: 28,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
         ),
         const SizedBox(width: 8),
         if (auth.isLoggedIn) ...[
@@ -169,11 +192,13 @@ class _CommonHeaderState extends State<CommonHeader> {
                 MaterialPageRoute(builder: (_) => const RegisterScreen()),
               );
             },
-            child: const Text(
+            child: Text(
               'Đăng ký',
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.black87,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -208,9 +233,15 @@ class SearchResultsBox extends StatelessWidget {
       width: double.infinity,
       constraints: const BoxConstraints(maxHeight: 400),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[900]!.withOpacity(0.95)
+            : Colors.white.withOpacity(0.95),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[800]!
+              : Colors.grey[200]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),

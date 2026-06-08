@@ -27,6 +27,7 @@ class HistoryProvider extends ChangeNotifier {
     required String name,
     required String slug,
     required String thumbUrl,
+    required String chapterName,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return; // Chỉ lưu lịch sử khi đã đăng nhập
@@ -37,6 +38,7 @@ class HistoryProvider extends ChangeNotifier {
       name: name,
       slug: slug,
       thumbUrl: thumbUrl,
+      chapterName: chapterName,
     );
     await loadHistories();
   }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../providers/history_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
+import '../models/comic_model.dart';
 import 'login_screen.dart';
+import 'detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -53,6 +56,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             _searchQuery = query;
                           });
                         },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF57C00),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Lịch sử đọc truyện',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -112,30 +139,129 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             separatorBuilder: (context, index) => const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final comic = provider.histories[index];
-                              return ListTile(
-                                contentPadding: const EdgeInsets.all(12),
-                                tileColor: Colors.white.withOpacity(0.8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                              final chapterName = comic['chapterName'] ?? 'Chương 1';
+
+                              final comicModel = Comic(
+                                id: comic['comicId'] ?? '',
+                                name: comic['name'] ?? '',
+                                slug: comic['slug'] ?? '',
+                                thumbUrl: comic['thumbUrl'] ?? '',
+                                status: '',
+                                updatedAt: '',
+                                categories: [],
+                              );
+
+                              String timeStr = '';
+                              try {
+                                if (comic['visitedAt'] != null) {
+                                  timeStr = timeago.format(DateTime.parse(comic['visitedAt']), locale: 'vi');
+                                }
+                              } catch (e) {
+                                timeStr = comic['visitedAt'] ?? '';
+                              }
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
                                 ),
-                                leading: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    'https://img.otruyenapi.com/uploads/comics/${comic['thumbUrl'] ?? ''}',
-                                    width: 56,
-                                    height: 72,
-                                    fit: BoxFit.cover,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(16),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => DetailScreen(comic: comicModel),
+                                      ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Comic Cover Image
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.network(
+                                            'https://img.otruyenapi.com/uploads/comics/${comic['thumbUrl'] ?? ''}',
+                                            width: 70,
+                                            height: 95,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              width: 70,
+                                              height: 95,
+                                              color: Colors.grey[200],
+                                              child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        // Details
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                comic['name'] ?? '',
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  height: 1.25,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              // Chapter Info Badge
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF57C00).withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  'Đã đọc: $chapterName',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFF57C00),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              // Timeago Icon + Label
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time_rounded,
+                                                    size: 14,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    timeStr,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                title: Text(
-                                  comic['name'] ?? '',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Text(
-                                  comic['visitedAt'] ?? '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               );
                             },
