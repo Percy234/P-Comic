@@ -21,8 +21,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<ComicProvider>().loadHomeComics();
-      context.read<ComicProvider>().loadPagedComics(1);
+      final comicProvider = context.read<ComicProvider>();
+      if (comicProvider.pagedComics.isEmpty) {
+        comicProvider.loadHomeComics();
+        comicProvider.loadPagedComics(1);
+      }
     });
   }
 

@@ -63,6 +63,22 @@ class _FilterScreenState extends State<FilterScreen> {
     _loadLocalPage(_localPage);
   }
 
+  void _showPagePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return _PagePickerBottomSheet(
+          initialPage: _localPage,
+          onSubmitted: (page) {
+            _loadLocalPage(page);
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _loadGenres() async {
     try {
       final genres = await _api.fetchGenres();
@@ -252,74 +268,73 @@ class _FilterScreenState extends State<FilterScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 4,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF57C00),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 4,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF57C00),
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Bộ lọc nâng cao',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Bộ lọc nâng cao',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -0.5,
+                                if (hasActiveFilters)
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedGenreSlugs.clear();
+                                        _selectedStatusValues.clear();
+                                      });
+                                      _loadLocalPage(1);
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFFC62828),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                                    label: const Text(
+                                      'Đặt lại',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
-                            if (hasActiveFilters)
-                              TextButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedGenreSlugs.clear();
-                                    _selectedStatusValues.clear();
-                                  });
-                                  _loadLocalPage(1);
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFFC62828),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                ),
-                                icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                                label: const Text(
-                                  'Đặt lại',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                ),
+                                ],
                               ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  InkWell(
                           onTap: _toggleGenrePanel,
                           borderRadius: BorderRadius.circular(8),
                           child: Padding(
@@ -740,25 +755,28 @@ class _FilterScreenState extends State<FilterScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFC62828),
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFC62828).withOpacity(0.2),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 3),
+                                  GestureDetector(
+                                    onTap: _showPagePicker,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFC62828),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFFC62828).withOpacity(0.2),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        'Trang $_localPage',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      'Trang $_localPage',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
                                       ),
                                     ),
                                   ),
@@ -767,6 +785,9 @@ class _FilterScreenState extends State<FilterScreen> {
                                     onPressed: () => _loadLocalPage(_localPage + 1),
                                     icon: const Icon(Icons.chevron_right_rounded),
                                     color: const Color(0xFFC62828),
+                                    disabledColor: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white30
+                                        : Colors.black26,
                                     style: IconButton.styleFrom(
                                       backgroundColor: const Color(0xFFC62828).withOpacity(0.1),
                                       padding: const EdgeInsets.all(8),
@@ -875,5 +896,205 @@ class _StatusOption {
     required this.value,
     required this.label,
   });
+}
+
+class _PagePickerBottomSheet extends StatefulWidget {
+  final int initialPage;
+  final ValueChanged<int> onSubmitted;
+
+  const _PagePickerBottomSheet({
+    required this.initialPage,
+    required this.onSubmitted,
+  });
+
+  @override
+  State<_PagePickerBottomSheet> createState() => _PagePickerBottomSheetState();
+}
+
+class _PagePickerBottomSheetState extends State<_PagePickerBottomSheet> {
+  String _input = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayValue = _input.isEmpty ? widget.initialPage.toString() : _input;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: 16,
+        left: 24,
+        right: 24,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Nhập số trang',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black26 : Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFC62828).withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Trang ',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFC62828),
+                  ),
+                ),
+                Text(
+                  displayValue,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 3,
+            childAspectRatio: 1.6,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 16,
+            children: [
+              _buildKey('1'),
+              _buildKey('2'),
+              _buildKey('3'),
+              _buildKey('4'),
+              _buildKey('5'),
+              _buildKey('6'),
+              _buildKey('7'),
+              _buildKey('8'),
+              _buildKey('9'),
+              _buildActionKey(
+                icon: Icons.backspace_rounded,
+                onTap: _onBackspace,
+              ),
+              _buildKey('0'),
+              _buildActionKey(
+                icon: Icons.check_circle_rounded,
+                color: const Color(0xFFC62828),
+                iconColor: Colors.white,
+                onTap: _onSubmit,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKey(String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            if (_input.length < 4) {
+              _input += value;
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionKey({
+    required IconData icon,
+    Color? color,
+    Color? iconColor,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBg = isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100];
+    return Material(
+      color: color ?? defaultBg,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: Icon(
+            icon,
+            color: iconColor ?? (isDark ? Colors.white70 : Colors.black87),
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onBackspace() {
+    if (_input.isNotEmpty) {
+      setState(() {
+        _input = _input.substring(0, _input.length - 1);
+      });
+    }
+  }
+
+  void _onSubmit() {
+    final pageNum = int.tryParse(_input) ?? widget.initialPage;
+    if (pageNum > 0) {
+      widget.onSubmitted(pageNum);
+    }
+    Navigator.pop(context);
+  }
 }
 

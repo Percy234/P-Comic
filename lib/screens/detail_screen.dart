@@ -7,6 +7,7 @@ import '../providers/history_provider.dart';
 import '../models/comic_model.dart';
 import '../providers/detail_provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/shimmer_placeholder.dart';
 import 'reading_screen.dart';
 import 'login_screen.dart';
 
@@ -64,6 +65,14 @@ class _DetailScreenState extends State<DetailScreen> {
                           child: Image.network(
                             comic.imageUrl,
                             fit: BoxFit.cover,
+                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded) return child;
+                              return AnimatedOpacity(
+                                opacity: frame == null ? 0.0 : 1.0,
+                                duration: const Duration(milliseconds: 300),
+                                child: child,
+                              );
+                            },
                           ),
                         ),
                         Positioned.fill(
@@ -86,95 +95,115 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                         ),
                         // Foreground Content
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SafeArea(
-                              bottom: false,
-                              child: SizedBox(height: 48),
-                            ),
-                            // Sharp Cover Image (60% of screen width)
-                            Builder(
-                              builder: (context) {
-                                final screenWidth = MediaQuery.of(context).size.width;
-                                final coverWidth = screenWidth * 0.60;
-                                final coverHeight = coverWidth * 1.45;
-                                return Container(
-                                  width: coverWidth,
-                                  height: coverHeight,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.4),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      comic.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey,
-                                          child: const Icon(
-                                            Icons.broken_image,
-                                            size: 48,
-                                            color: Colors.white,
-                                          ),
-                                        );
-                                      },
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const SafeArea(
+                                bottom: false,
+                                child: SizedBox(height: 48),
+                              ),
+                              // Sharp Cover Image (60% of screen width)
+                              Builder(
+                                builder: (context) {
+                                  final screenWidth = MediaQuery.of(context).size.width;
+                                  final coverWidth = screenWidth * 0.60;
+                                  final coverHeight = coverWidth * 1.45;
+                                  return Container(
+                                    width: coverWidth,
+                                    height: coverHeight,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.4),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
                                     ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        comic.imageUrl,
+                                        fit: BoxFit.cover,
+                                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                                          if (wasSynchronouslyLoaded) return child;
+                                          return AnimatedCrossFade(
+                                            firstChild: SizedBox(
+                                              width: coverWidth,
+                                              height: coverHeight,
+                                              child: const ShimmerPlaceholder(
+                                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                                              ),
+                                            ),
+                                            secondChild: child,
+                                            crossFadeState: frame == null
+                                                ? CrossFadeState.showFirst
+                                                : CrossFadeState.showSecond,
+                                            duration: const Duration(milliseconds: 300),
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container(
+                                            color: Colors.grey,
+                                            child: const Icon(
+                                              Icons.broken_image,
+                                              size: 48,
+                                              color: Colors.white,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              // Comic Title
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: Text(
+                                  comic.name,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    height: 1.3,
                                   ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            // Comic Title
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                              child: Text(
-                                comic.name,
-                                textAlign: TextAlign.center,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  height: 1.3,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 14),
-                            // Comic Metadata Chips
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  _MetaChip(
-                                    icon: Icons.person_outline,
-                                    label: comic.author,
-                                  ),
-                                  _MetaChip(
-                                    icon: Icons.circle,
-                                    label: statusLabel,
-                                    iconColor: _statusColor(comic.status),
-                                  ),
-                                  _MetaChip(
-                                    icon: Icons.menu_book,
-                                    label: '${comic.chapters.length} chương',
-                                  ),
-                                ],
+                              const SizedBox(height: 14),
+                              // Comic Metadata Chips
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    _MetaChip(
+                                      icon: Icons.person_outline,
+                                      label: comic.author,
+                                    ),
+                                    _MetaChip(
+                                      icon: Icons.circle,
+                                      label: statusLabel,
+                                      iconColor: _statusColor(comic.status),
+                                    ),
+                                    _MetaChip(
+                                      icon: Icons.menu_book,
+                                      label: '${comic.chapters.length} chương',
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -202,6 +231,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                             slug: widget.comic.slug,
                                             thumbUrl: comic.thumbUrl,
                                             chapterName: comic.chapters.first.name,
+                                            chapters: comic.chapters,
+                                            currentIndex: 0,
                                           ),
                                         ),
                                       );
@@ -227,6 +258,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                             slug: widget.comic.slug,
                                             thumbUrl: comic.thumbUrl,
                                             chapterName: comic.chapters.last.name,
+                                            chapters: comic.chapters,
+                                            currentIndex: comic.chapters.length - 1,
                                           ),
                                         ),
                                       );
@@ -636,6 +669,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                     ),
                                   ),
                                   onTap: () {
+                                    final originalIndex = comic.chapters.length - 1 - index;
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -646,6 +680,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                           slug: widget.comic.slug,
                                           thumbUrl: comic.thumbUrl,
                                           chapterName: chapter.name,
+                                          chapters: comic.chapters,
+                                          currentIndex: originalIndex,
                                         ),
                                       ),
                                     );

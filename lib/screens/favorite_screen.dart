@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../widgets/background_decorations.dart';
+import '../widgets/shimmer_placeholder.dart';
 import '../models/comic_genre_model.dart';
 import '../models/comic_model.dart';
 import '../providers/favorite_provider.dart';
@@ -346,6 +347,21 @@ class _FavoriteListCard extends StatelessWidget {
                     height: 120,
                     fit: BoxFit.cover,
                     cacheWidth: 600,
+                    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                      if (wasSynchronouslyLoaded) return child;
+                      return AnimatedCrossFade(
+                        firstChild: const ShimmerPlaceholder(
+                          width: 85,
+                          height: 120,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                        ),
+                        secondChild: child,
+                        crossFadeState: frame == null
+                            ? CrossFadeState.showFirst
+                            : CrossFadeState.showSecond,
+                        duration: const Duration(milliseconds: 300),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 85,
                       height: 120,

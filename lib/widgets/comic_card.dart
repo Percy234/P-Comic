@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/comic_model.dart';
 import '../screens/detail_screen.dart';
 
+import 'shimmer_placeholder.dart';
+
 class ComicCard extends StatelessWidget {
   final Comic comic;
   final String? subtitle;
@@ -45,9 +47,29 @@ class ComicCard extends StatelessWidget {
                         height: imageHeight,
                         fit: BoxFit.cover,
                         cacheWidth: 600,
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded) return child;
+                          return AnimatedCrossFade(
+                            firstChild: SizedBox(
+                              height: imageHeight,
+                              width: double.infinity,
+                              child: const ShimmerPlaceholder(),
+                            ),
+                            secondChild: child,
+                            crossFadeState: frame == null
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            duration: const Duration(milliseconds: 300),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(Icons.error),
+                          return Container(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey[900]
+                                : Colors.grey[200],
+                            child: const Center(
+                              child: Icon(Icons.broken_image_rounded, color: Colors.grey),
+                            ),
                           );
                         },
                       ),

@@ -13,7 +13,7 @@ import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/filter_provider.dart';
 import 'providers/theme_provider.dart';
-import 'screens/main_shell.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
           primary: Color(0xFFF57C00),
           secondary: Colors.blue,
           surface: Colors.white,
-          background: Color(0xFFEBEBEB),
+          background: const Color(0xFFEBEBEB),
           onPrimary: Colors.white,
           onSurface: Colors.black87,
         ),
@@ -73,13 +73,13 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFF57C00),
           secondary: Colors.blue,
-          surface: Color(0xFF1E1E1E),
-          background: Color(0xFF121212),
+          surface: const Color(0xFF1E1E1E),
+          background: const Color(0xFF121212),
           onPrimary: Colors.white,
           onSurface: Colors.white,
         ),
       ),
-      home: const MainShell(),
+      home: const SplashScreen(),
     );
   }
 }

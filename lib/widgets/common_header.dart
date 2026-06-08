@@ -306,10 +306,32 @@ class SearchResultsBox extends StatelessWidget {
                                 width: 70,
                                 height: 100,
                                 fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    width: 70,
+                                    height: 100,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.grey[900]
+                                        : Colors.grey[100],
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xFFC62828),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                                 errorBuilder: (context, error, stackTrace) => Container(
                                   width: 70,
                                   height: 100,
-                                  color: Colors.grey[200],
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.grey[900]
+                                      : Colors.grey[200],
                                   child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
                                 ),
                               ),
