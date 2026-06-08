@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/comic_provider.dart';
 import '../widgets/comic_card.dart';
 import '../widgets/common_header.dart';
+import '../widgets/background_decorations.dart';
 import '../providers/filter_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -47,42 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 350,
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.orange.withOpacity(0.18),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 120,
-            left: -150,
-            child: Container(
-              width: 600,
-              height: 600,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.15),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -150,
-            right: -150,
-            child: Container(
-              width: 450,
-              height: 450,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.red.withOpacity(0.16),
-              ),
-            ),
-          ),
+          const BackgroundDecorations(),
           // Nội dung giao diện chính
           SafeArea(
             child: Consumer<ComicProvider>(
@@ -196,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor.withOpacity(0.9),
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(

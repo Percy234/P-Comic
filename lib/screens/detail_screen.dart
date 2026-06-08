@@ -127,19 +127,23 @@ class _DetailScreenState extends State<DetailScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(
                                         comic.imageUrl,
+                                        width: coverWidth,
+                                        height: coverHeight,
                                         fit: BoxFit.cover,
                                         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                                           if (wasSynchronouslyLoaded) return child;
+                                          final isLoaded = frame != null;
                                           return AnimatedCrossFade(
                                             firstChild: SizedBox(
                                               width: coverWidth,
                                               height: coverHeight,
-                                              child: const ShimmerPlaceholder(
-                                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                                              child: ShimmerPlaceholder(
+                                                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                                enabled: !isLoaded,
                                               ),
                                             ),
                                             secondChild: child,
-                                            crossFadeState: frame == null
+                                            crossFadeState: !isLoaded
                                                 ? CrossFadeState.showFirst
                                                 : CrossFadeState.showSecond,
                                             duration: const Duration(milliseconds: 300),

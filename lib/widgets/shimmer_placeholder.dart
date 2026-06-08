@@ -5,6 +5,7 @@ class ShimmerPlaceholder extends StatefulWidget {
   final double? height;
   final BorderRadius? borderRadius;
   final IconData? icon;
+  final bool enabled;
 
   const ShimmerPlaceholder({
     super.key,
@@ -12,6 +13,7 @@ class ShimmerPlaceholder extends StatefulWidget {
     this.height,
     this.borderRadius,
     this.icon,
+    this.enabled = true,
   });
 
   @override
@@ -29,7 +31,7 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+    );
 
     _animation = Tween<double>(begin: 0.35, end: 0.75).animate(
       CurvedAnimation(
@@ -37,6 +39,24 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder>
         curve: Curves.easeInOut,
       ),
     );
+
+    if (widget.enabled) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ShimmerPlaceholder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled != oldWidget.enabled) {
+      if (widget.enabled) {
+        if (!_controller.isAnimating) {
+          _controller.repeat(reverse: true);
+        }
+      } else {
+        _controller.stop();
+      }
+    }
   }
 
   @override
@@ -53,21 +73,21 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Opacity(
-          opacity: _animation.value,
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            decoration: BoxDecoration(
-              color: baseColor,
-              borderRadius: widget.borderRadius ?? BorderRadius.zero,
-            ),
-            child: Center(
-              child: Icon(
-                widget.icon ?? Icons.image_outlined,
-                color: isDark ? Colors.white10 : Colors.black12,
-                size: 32,
-              ),
+        final opacityVal = _animation.value;
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            // ignore: deprecated_member_use
+            color: baseColor.withOpacity(opacityVal),
+            borderRadius: widget.borderRadius ?? BorderRadius.zero,
+          ),
+          child: Center(
+            child: Icon(
+              widget.icon ?? Icons.image_outlined,
+              // ignore: deprecated_member_use
+              color: (isDark ? Colors.white10 : Colors.black12).withOpacity(opacityVal),
+              size: 32,
             ),
           ),
         );

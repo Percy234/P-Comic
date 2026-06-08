@@ -239,14 +239,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             fit: BoxFit.cover,
                                             frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                                               if (wasSynchronouslyLoaded) return child;
+                                              final isLoaded = frame != null;
                                               return AnimatedCrossFade(
-                                                firstChild: const ShimmerPlaceholder(
+                                                firstChild: ShimmerPlaceholder(
                                                   width: 70,
                                                   height: 95,
-                                                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                                                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                                  enabled: !isLoaded,
                                                 ),
                                                 secondChild: child,
-                                                crossFadeState: frame == null
+                                                crossFadeState: !isLoaded
                                                     ? CrossFadeState.showFirst
                                                     : CrossFadeState.showSecond,
                                                 duration: const Duration(milliseconds: 300),
