@@ -8,6 +8,7 @@ import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import 'licenses_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(int)? onChangeTab;
@@ -352,18 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             widget.onChangeTab?.call(3);
           },
         ),
-        const SizedBox(height: 12),
-        _buildMenuTile(
-          icon: Icons.lock_outline_rounded,
-          iconColor: const Color(0xFFF57C00),
-          title: 'Đổi mật khẩu',
-          subtitle: 'Cập nhật bảo mật tài khoản',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tính năng đổi mật khẩu đang được phát triển.')),
-            );
-          },
-        ),
+
         const SizedBox(height: 12),
         _buildMenuTile(
           icon: Icons.info_outline_rounded,
@@ -371,15 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: 'Về ứng dụng P-Comic',
           subtitle: 'Thông tin phiên bản v1.0.0',
           onTap: () {
-            showAboutDialog(
-              context: context,
-              applicationName: 'P-Comic',
-              applicationVersion: '1.0.0',
-              applicationIcon: const Icon(Icons.menu_book, color: Color(0xFFF57C00), size: 48),
-              children: [
-                const Text('Ứng dụng đọc truyện tranh trực tuyến P-Comic phiên bản premium với các tính năng lưu yêu thích, lưu lịch sử đọc cá nhân hóa.'),
-              ],
-            );
+            _showCustomAboutDialog(context);
           },
         ),
         const SizedBox(height: 32),
@@ -388,6 +370,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         InkWell(
           onTap: () async {
             await context.read<AuthProvider>().logout();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Đăng xuất thành công'),
+                  backgroundColor: Color(0xFFF57C00),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
           },
           borderRadius: BorderRadius.circular(16),
           child: Container(
@@ -534,6 +525,171 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showCustomAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          elevation: 10,
+          backgroundColor: theme.cardColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // App Icon Container
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFE0B2), Color(0xFFFFF3E0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF57C00).withOpacity(0.12),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFFF9800), Color(0xFFE65100)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.menu_book,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Title
+                const Text(
+                  'P-Comic',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Phiên bản 1.0.0',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Description
+                Text(
+                  'Ứng dụng đọc truyện tranh trực tuyến P-Comic phiên bản premium với các tính năng lưu yêu thích, lưu lịch sử đọc cá nhân hóa.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.grey[800] : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            'Đóng',
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[300] : Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context); // Close the dialog
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LicensesScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFF57C00), Color(0xFFE65100)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFE65100).withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            'Giấy phép',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

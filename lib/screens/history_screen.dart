@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../providers/history_provider.dart';
+import '../widgets/shimmer_placeholder.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
@@ -130,7 +131,48 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           }
 
                           if (provider.histories.isEmpty) {
-                            return const Center(child: Text('Chưa có lịch sử đọc'));
+                            final theme = Theme.of(context);
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.history_rounded,
+                                        size: 36,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Chưa có lịch sử đọc',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Những bộ truyện bạn đã đọc sẽ xuất hiện ở đây để bạn dễ dàng theo dõi tiếp.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.white54
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
                           }
 
                           return ListView.separated(
@@ -195,24 +237,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             width: 70,
                                             height: 95,
                                             fit: BoxFit.cover,
-                                            loadingBuilder: (context, child, loadingProgress) {
-                                              if (loadingProgress == null) return child;
-                                              return Container(
-                                                width: 70,
-                                                height: 95,
-                                                color: Theme.of(context).brightness == Brightness.dark
-                                                    ? Colors.grey[900]
-                                                    : Colors.grey[100],
-                                                child: const Center(
-                                                  child: SizedBox(
-                                                    width: 16,
-                                                    height: 16,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: Color(0xFFC62828),
-                                                    ),
-                                                  ),
+                                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                                              if (wasSynchronouslyLoaded) return child;
+                                              return AnimatedCrossFade(
+                                                firstChild: const ShimmerPlaceholder(
+                                                  width: 70,
+                                                  height: 95,
+                                                  borderRadius: BorderRadius.all(Radius.circular(12)),
                                                 ),
+                                                secondChild: child,
+                                                crossFadeState: frame == null
+                                                    ? CrossFadeState.showFirst
+                                                    : CrossFadeState.showSecond,
+                                                duration: const Duration(milliseconds: 300),
                                               );
                                             },
                                             errorBuilder: (context, error, stackTrace) => Container(
