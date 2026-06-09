@@ -1,0 +1,59 @@
+name: Build and Release Flutter App
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger workflow khi push bất kỳ tag nào bắt đầu bằng 'v' (ví dụ: v1.0.0)
+
+permissions:
+  contents: write # Cấp quyền ghi để tạo Release và upload file APK
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout mã nguồn từ repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Thiết lập môi trường Java (bắt buộc cho Android build)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Thiết lập Flutter (Mặc định dùng phiên bản Stable mới nhất)
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 4. Tải các dependencies của Flutter
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. Chạy phân tích mã nguồn (Tùy chọn - Đảm bảo code sạch trước khi release)
+      - name: Analyze project
+        run: flutter analyze
+
+      # 6. Build file APK cho Android (Release mode)
+      - name: Build APK
+        run: flutter build apk --release
+
+      # 7. Tự động tạo Release trên GitHub và đính kèm file APK
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Phiên bản mới ${{ github.ref_name }} đã sẵn sàng!
+            
+            ### Có gì mới:
+            *Xem chi tiết commit để biết các thay đổi.*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
