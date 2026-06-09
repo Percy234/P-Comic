@@ -6,9 +6,9 @@ class BackgroundDecorations extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final double orangeOpacity = isDark ? 0.48 : 0.58;
-    final double blueOpacity = isDark ? 0.47 : 0.55;
-    final double redOpacity = isDark ? 0.47 : 0.56;
+    final double orangeOpacity = isDark ? 0.50 : 0.60;
+    final double blueOpacity = isDark ? 0.48 : 0.58;
+    final double redOpacity = isDark ? 0.48 : 0.58;
 
     return RepaintBoundary(
       child: Stack(

@@ -6,8 +6,7 @@ import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
 import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
+import '../widgets/require_login_placeholder.dart';
 import 'licenses_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -59,14 +58,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                        child: isLoggedIn && user != null
-                            ? _buildMemberContent(context, user, favoriteProvider, historyProvider)
-                            : _buildGuestContent(context),
+                    if (!isLoggedIn)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF57C00),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Trang cá nhân',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    Expanded(
+                      child: isLoggedIn && user != null
+                          ? SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                              child: _buildMemberContent(context, user, favoriteProvider, historyProvider),
+                            )
+                          : _buildGuestContent(context),
                     ),
                   ],
                 ),
@@ -94,123 +118,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildGuestContent(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 48),
-        Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Theme.of(context).cardColor.withOpacity(0.9)
-                : Colors.white.withOpacity(0.9),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[800]!
-                  : Colors.grey[200]!,
-              width: 2,
-            ),
-          ),
-          child: Icon(
-            Icons.account_circle_rounded,
-            size: 80,
-            color: Colors.grey[400],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Chưa Đăng Nhập',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black87,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Đăng nhập tài khoản để lưu lại những bộ truyện yêu thích, đồng bộ lịch sử đọc truyện và nhận các thông báo mới nhất.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[400]
-                  : Colors.grey[600],
-              height: 1.5,
-            ),
-          ),
-        ),
-        const SizedBox(height: 36),
-        // Login Button
-        InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-          },
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF57C00), Color(0xFFE65100)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFE65100).withOpacity(0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Text(
-              'Đăng nhập ngay',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Register Button
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const RegisterScreen()),
-            );
-          },
-          child: const Text(
-            'Tạo tài khoản mới',
-            style: TextStyle(
-              color: Color(0xFFF57C00),
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-        ),
-      ],
+    return const RequireLoginPlaceholder(
+      icon: Icons.account_circle_rounded,
+      title: 'Tài Khoản Cá Nhân',
+      description: 'Đăng nhập tài khoản để đồng bộ hóa danh sách truyện yêu thích, lưu lịch sử đọc truyện và nhận các thông báo mới nhất.',
     );
   }
 

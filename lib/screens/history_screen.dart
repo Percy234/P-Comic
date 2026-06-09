@@ -6,6 +6,7 @@ import '../widgets/shimmer_placeholder.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
+import '../widgets/require_login_placeholder.dart';
 import '../models/comic_model.dart';
 import 'login_screen.dart';
 import 'detail_screen.dart';
@@ -87,46 +88,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       child: Consumer<HistoryProvider>(
                         builder: (context, provider, child) {
                           if (!auth.isLoggedIn) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.history_rounded,
-                                    size: 64,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'Vui lòng đăng nhập để xem lịch sử đọc',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF57C00),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const LoginScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text(
-                                      'Đăng nhập ngay',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            return const RequireLoginPlaceholder(
+                              icon: Icons.history_rounded,
+                              title: 'Lịch Sử Đọc Truyện',
+                              description: 'Đăng nhập tài khoản để đồng bộ và lưu trữ lịch sử đọc truyện của bạn trên mọi thiết bị.',
                             );
                           }
 

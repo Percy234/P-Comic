@@ -34,6 +34,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -51,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? theme.cardColor : Colors.white,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -60,7 +63,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   offset: const Offset(0, 2),
                                 ),
                               ],
-                              border: Border.all(color: Colors.grey[200]!),
+                              border: Border.all(
+                                color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                              ),
                             ),
                             child: IconButton(
                               constraints: const BoxConstraints(
@@ -106,7 +111,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           builder: (context, auth, child) {
                             return Card(
                               elevation: 4,
-                              color: Colors.white.withOpacity(0.92),
+                              color: isDark
+                                  ? theme.cardColor.withOpacity(0.9)
+                                  : Colors.white.withOpacity(0.92),
                               shadowColor: Colors.black.withOpacity(0.1),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
@@ -116,13 +123,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Đăng Ký Tài Khoản',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
+                                        color: isDark ? Colors.white : Colors.black87,
                                         letterSpacing: -0.5,
                                       ),
                                     ),
@@ -132,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey[600],
+                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                                       ),
                                     ),
                                     const SizedBox(height: 24),
@@ -143,26 +150,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
-                                        color: Colors.grey[800],
+                                        color: isDark ? Colors.grey[300] : Colors.grey[800],
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[100],
+                                        color: isDark ? Colors.black.withOpacity(0.25) : Colors.grey[100],
                                         borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                        ),
                                       ),
                                       child: TextField(
                                         controller: emailController,
                                         keyboardType: TextInputType.emailAddress,
-                                        decoration: const InputDecoration(
-                                          prefixIcon: Icon(Icons.email_rounded, color: Colors.grey),
+                                        cursorColor: const Color(0xFFF57C00),
+                                        decoration: InputDecoration(
+                                          prefixIcon: Icon(
+                                            Icons.email_rounded,
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          ),
                                           hintText: 'Nhập email của bạn',
-                                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                          hintStyle: TextStyle(
+                                            color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                            fontSize: 14,
+                                          ),
                                           border: InputBorder.none,
-                                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                         ),
-                                        style: const TextStyle(fontSize: 15),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: isDark ? Colors.white : Colors.black87,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 16),
@@ -173,26 +193,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
-                                        color: Colors.grey[800],
+                                        color: isDark ? Colors.grey[300] : Colors.grey[800],
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[100],
+                                        color: isDark ? Colors.black.withOpacity(0.25) : Colors.grey[100],
                                         borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                        ),
                                       ),
                                       child: TextField(
                                         controller: passwordController,
                                         obscureText: _obscurePassword,
+                                        cursorColor: const Color(0xFFF57C00),
                                         decoration: InputDecoration(
-                                          prefixIcon: const Icon(Icons.lock_rounded, color: Colors.grey),
+                                          prefixIcon: Icon(
+                                            Icons.lock_rounded,
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          ),
                                           suffixIcon: IconButton(
                                             icon: Icon(
                                               _obscurePassword 
                                                   ? Icons.visibility_off_rounded 
                                                   : Icons.visibility_rounded,
-                                              color: Colors.grey,
+                                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                                             ),
                                             onPressed: () {
                                               setState(() {
@@ -201,11 +228,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             },
                                           ),
                                           hintText: 'Nhập mật khẩu',
-                                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                                          hintStyle: TextStyle(
+                                            color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                            fontSize: 14,
+                                          ),
                                           border: InputBorder.none,
                                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                         ),
-                                        style: const TextStyle(fontSize: 15),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: isDark ? Colors.white : Colors.black87,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 16),
@@ -216,26 +249,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
-                                        color: Colors.grey[800],
+                                        color: isDark ? Colors.grey[300] : Colors.grey[800],
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[100],
+                                        color: isDark ? Colors.black.withOpacity(0.25) : Colors.grey[100],
                                         borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                        ),
                                       ),
                                       child: TextField(
                                         controller: confirmPasswordController,
                                         obscureText: _obscureConfirmPassword,
+                                        cursorColor: const Color(0xFFF57C00),
                                         decoration: InputDecoration(
-                                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.grey),
+                                          prefixIcon: Icon(
+                                            Icons.lock_outline_rounded,
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          ),
                                           suffixIcon: IconButton(
                                             icon: Icon(
                                               _obscureConfirmPassword 
                                                   ? Icons.visibility_off_rounded 
                                                   : Icons.visibility_rounded,
-                                              color: Colors.grey,
+                                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                                             ),
                                             onPressed: () {
                                               setState(() {
@@ -244,11 +284,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             },
                                           ),
                                           hintText: 'Nhập lại mật khẩu',
-                                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                                          hintStyle: TextStyle(
+                                            color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                            fontSize: 14,
+                                          ),
                                           border: InputBorder.none,
                                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                         ),
-                                        style: const TextStyle(fontSize: 15),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: isDark ? Colors.white : Colors.black87,
+                                        ),
                                       ),
                                     ),
                                     
@@ -258,9 +304,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                         decoration: BoxDecoration(
-                                          color: Colors.red[50],
+                                          color: isDark
+                                              ? const Color(0xFFC62828).withOpacity(0.15)
+                                              : Colors.red[50],
                                           borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.red[100]!),
+                                          border: Border.all(
+                                            color: isDark
+                                                ? const Color(0xFFC62828).withOpacity(0.3)
+                                                : Colors.red[100]!,
+                                          ),
                                         ),
                                         child: Row(
                                           children: [
@@ -269,7 +321,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             Expanded(
                                               child: Text(
                                                 auth.errorMessage!,
-                                                style: const TextStyle(color: Colors.red, fontSize: 13),
+                                                style: TextStyle(
+                                                  color: isDark ? const Color(0xFFE57373) : Colors.red,
+                                                  fontSize: 13,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -359,7 +414,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       children: [
                                         Text(
                                           'Đã có tài khoản? ',
-                                          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                          style: TextStyle(
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
                                         ),
                                         GestureDetector(
                                           onTap: () {

@@ -8,6 +8,7 @@ import '../models/comic_model.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/common_header.dart';
+import '../widgets/require_login_placeholder.dart';
 import 'detail_screen.dart';
 import 'login_screen.dart';
 
@@ -94,48 +95,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ),
                           ),
                           if (!auth.isLoggedIn)
-                            SliverFillRemaining(
+                            const SliverFillRemaining(
                               hasScrollBody: false,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.favorite_outline_rounded,
-                                      size: 64,
-                                      color: Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Vui lòng đăng nhập để xem danh sách yêu thích',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFF57C00),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const LoginScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        'Đăng nhập ngay',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              child: RequireLoginPlaceholder(
+                                icon: Icons.favorite_outline_rounded,
+                                title: 'Truyện Yêu Thích',
+                                description: 'Đăng nhập tài khoản để lưu lại những bộ truyện yêu thích và đồng bộ hóa tủ sách của bạn.',
                               ),
                             ),
                           if (auth.isLoggedIn) ...[
