@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../models/comic_detail_model.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
 import '../models/comic_model.dart';
@@ -557,14 +558,45 @@ class _DetailScreenState extends State<DetailScreen> {
                                     letterSpacing: -0.5,
                                   ),
                                 ),
-                                Text(
-                                  '${comic.chapters.length} chương',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.white60
-                                        : Colors.black54,
+                                InkWell(
+                                  onTap: () => _showChapterPicker(context, comic),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey[850]
+                                          : Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.grey[800]!
+                                            : Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.search_rounded,
+                                          size: 16,
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? Colors.white70
+                                              : Colors.black87,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Tìm chương',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? Colors.white70
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -719,6 +751,75 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
+  void _showChapterPicker(BuildContext context, dynamic comic) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return _ChapterPickerBottomSheet(
+          onSubmitted: (searchVal) {
+            final index = _findChapterIndexByNumber(comic.chapters, searchVal);
+            if (index != null) {
+              final chapter = comic.chapters[index];
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ReadingScreen(
+                    apiUrl: chapter.apiData,
+                    comicId: comic.id,
+                    name: comic.name,
+                    slug: widget.comic.slug,
+                    thumbUrl: comic.thumbUrl,
+                    chapterName: chapter.name,
+                    chapters: comic.chapters,
+                    currentIndex: index,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Không tìm thấy chương $searchVal'),
+                  backgroundColor: Colors.red[800],
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
+  int? _findChapterIndexByNumber(List<dynamic> chapters, String searchNum) {
+    final cleanSearch = searchNum.trim();
+    if (cleanSearch.isEmpty) return null;
+    
+    final searchDouble = double.tryParse(cleanSearch);
+    
+    for (int i = 0; i < chapters.length; i++) {
+      final name = chapters[i].name;
+      // 1. Try regex numeric extraction
+      final match = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(name);
+      if (match != null) {
+        final chNum = double.tryParse(match.group(1)!);
+        if (chNum != null && searchDouble != null && chNum == searchDouble) {
+          return i;
+        }
+      }
+      // 2. Fallback: string comparison
+      if (name.toLowerCase().contains(cleanSearch.toLowerCase())) {
+        final words = name.split(RegExp(r'\s+'));
+        for (final word in words) {
+          if (word == cleanSearch || word.replaceAll(RegExp(r'[^\d.]'), '') == cleanSearch) {
+            return i;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   static String _formatDate(String? raw) {
     if (raw == null || raw.isEmpty) return '';
     try {
@@ -854,5 +955,237 @@ class _HeaderIconButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ChapterPickerBottomSheet extends StatefulWidget {
+  final ValueChanged<String> onSubmitted;
+
+  const _ChapterPickerBottomSheet({
+    required this.onSubmitted,
+  });
+
+  @override
+  State<_ChapterPickerBottomSheet> createState() => _ChapterPickerBottomSheetState();
+}
+
+class _ChapterPickerBottomSheetState extends State<_ChapterPickerBottomSheet> {
+  String _input = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayValue = _input.isEmpty ? '?' : _input;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: 16,
+        left: 24,
+        right: 24,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Nhập số chương',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black26 : Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFF57C00).withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Chương ',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFF57C00),
+                  ),
+                ),
+                Text(
+                  displayValue,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 3,
+            childAspectRatio: 1.8,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 16,
+            children: [
+              _buildKey('1'),
+              _buildKey('2'),
+              _buildKey('3'),
+              _buildKey('4'),
+              _buildKey('5'),
+              _buildKey('6'),
+              _buildKey('7'),
+              _buildKey('8'),
+              _buildKey('9'),
+              _buildKey('.'),
+              _buildKey('0'),
+              _buildActionKey(
+                icon: Icons.backspace_rounded,
+                onTap: _onBackspace,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF57C00), Color(0xFFFF9800)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF57C00).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: _onSubmit,
+              icon: const Icon(Icons.search_rounded, color: Colors.white),
+              label: const Text(
+                'TÌM CHƯƠNG',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKey(String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            if (_input.length < 6) {
+              _input += value;
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionKey({
+    required IconData icon,
+    Color? color,
+    Color? iconColor,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBg = isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100];
+    return Material(
+      color: color ?? defaultBg,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: Icon(
+            icon,
+            color: iconColor ?? (isDark ? Colors.white70 : Colors.black87),
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onBackspace() {
+    if (_input.isNotEmpty) {
+      setState(() {
+        _input = _input.substring(0, _input.length - 1);
+      });
+    }
+  }
+
+  void _onSubmit() {
+    if (_input.isNotEmpty) {
+      Navigator.pop(context);
+      widget.onSubmitted(_input);
+    } else {
+      Navigator.pop(context);
+    }
   }
 }
