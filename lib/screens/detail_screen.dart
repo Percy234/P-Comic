@@ -230,7 +230,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                         MaterialPageRoute(
                                           builder: (_) => ReadingScreen(
                                             apiUrl: comic.chapters.first.apiData,
-                                            comicId: widget.comic.id,
+                                            comicId: comic.id,
                                             name: comic.name,
                                             slug: widget.comic.slug,
                                             thumbUrl: comic.thumbUrl,
@@ -257,7 +257,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                         MaterialPageRoute(
                                           builder: (_) => ReadingScreen(
                                             apiUrl: comic.chapters.last.apiData,
-                                            comicId: widget.comic.id,
+                                            comicId: comic.id,
                                             name: comic.name,
                                             slug: widget.comic.slug,
                                             thumbUrl: comic.thumbUrl,
@@ -283,7 +283,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           child: Builder(
                             builder: (context) {
                               final favoriteProvider = context.watch<FavoriteProvider>();
-                              final isFavorite = favoriteProvider.isFavoriteComic(widget.comic.id);
+                              final isFavorite = favoriteProvider.isFavoriteComic(comic.id);
                               return _ActionButton(
                                 label: isFavorite
                                     ? 'Đã thích'
@@ -466,7 +466,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                     return;
                                   }
                                   await favoriteProvider.toggleFavorite(
-                                    comicId: widget.comic.id,
+                                    comicId: comic.id,
                                     name: widget.comic.name,
                                     slug: widget.comic.slug,
                                     thumbUrl: widget.comic.thumbUrl,
@@ -679,7 +679,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                       MaterialPageRoute(
                                         builder: (_) => ReadingScreen(
                                           apiUrl: chapter.apiData,
-                                          comicId: widget.comic.id,
+                                          comicId: comic.id,
                                           name: comic.name,
                                           slug: widget.comic.slug,
                                           thumbUrl: comic.thumbUrl,

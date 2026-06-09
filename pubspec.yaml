@@ -1,7 +1,7 @@
 name: p_comic
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.0+1
 
 environment:
   sdk: ^3.11.5
@@ -20,6 +20,7 @@ dependencies:
   firebase_auth: ^5.5.0
   google_fonts: ^6.2.1
   lottie: ^3.1.2
+  cloud_firestore: ^5.6.12
 
 dev_dependencies:
   flutter_test:

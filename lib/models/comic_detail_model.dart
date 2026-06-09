@@ -2,6 +2,7 @@ import 'chapter_model.dart';
 import 'comic_genre_model.dart';
 
 class ComicDetail {
+  final String id;
   final String name;
   final String author;
   final String content;
@@ -11,6 +12,7 @@ class ComicDetail {
   final List<ComicGenre> categories;
 
   ComicDetail({
+    required this.id,
     required this.name,
     required this.author,
     required this.content,
@@ -36,6 +38,7 @@ class ComicDetail {
         : <ComicGenre>[];
 
     return ComicDetail(
+      id: json['_id'] ?? '',
       name: json['name'] ?? '',
       author: (json['author'] != null && json['author'].isNotEmpty) ? json['author'][0] : 'Đang cập nhật',
       content: json['content'] ?? '',
