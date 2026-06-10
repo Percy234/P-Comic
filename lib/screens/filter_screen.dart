@@ -211,8 +211,23 @@ class _FilterScreenState extends State<FilterScreen> {
     if (raw == null || raw.trim().isEmpty) return 'Sắp ra';
     final match = RegExp(r'(\d+)').firstMatch(raw);
     if (match != null) return 'Chương ${match.group(1)}';
-      return raw;
+    return raw;
+  }
+
+  Color _getTagColor(String name) {
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
     }
+    final double hue = (hash.abs() % 360).toDouble();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return HSLColor.fromAHSL(
+      1.0,
+      hue,
+      0.75,
+      isDark ? 0.70 : 0.40,
+    ).toColor();
+  }
 
     @override
     Widget build(BuildContext context) {
@@ -393,86 +408,73 @@ class _FilterScreenState extends State<FilterScreen> {
                                             ),
                                           ),
                                         ),
-                                        AnimatedCrossFade(
-                                          firstChild: const SizedBox.shrink(),
-                                          secondChild: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(height: 12),
-                                              if (_genres.isEmpty)
-                                                const Padding(
-                                                  padding: EdgeInsets.only(bottom: 12, top: 4),
-                                                  child: Text(
-                                                    'Đang tải danh sách thể loại...',
-                                                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                                                  ),
-                                                )
-                                              else
-                                                Wrap(
-                                                  spacing: 8,
-                                                  runSpacing: 8,
-                                                  children: _genres.map((genre) {
-                                                    final selected = _selectedGenreSlugs.contains(genre.slug);
-                                                    return GestureDetector(
-                                                      onTap: () => _toggleGenre(genre.slug),
-                                                      child: AnimatedContainer(
-                                                        duration: const Duration(milliseconds: 150),
-                                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                                        decoration: BoxDecoration(
-                                                          gradient: selected
-                                                              ? const LinearGradient(
-                                                                  colors: [Color(0xFFFF8A80), Color(0xFFC62828)],
-                                                                  begin: Alignment.topLeft,
-                                                                  end: Alignment.bottomRight,
-                                                                )
-                                                              : null,
-                                                          color: selected
-                                                              ? null
-                                                              : Theme.of(context).brightness == Brightness.dark
-                                                                  ? Colors.grey[850]
-                                                                  : Colors.grey[100],
-                                                          borderRadius: BorderRadius.circular(20),
-                                                          border: Border.all(
-                                                            color: selected
-                                                                ? Colors.transparent
-                                                                : Theme.of(context).brightness == Brightness.dark
-                                                                    ? Colors.grey[800]!
-                                                                    : Colors.black12,
-                                                            width: 1,
-                                                          ),
-                                                          boxShadow: selected
-                                                              ? [
-                                                                  BoxShadow(
-                                                                    color: const Color(0xFFC62828).withOpacity(0.25),
-                                                                    blurRadius: 6,
-                                                                    offset: const Offset(0, 3),
-                                                                  )
-                                                                ]
-                                                              : [],
-                                                        ),
-                                                        child: Text(
-                                                          genre.name,
-                                                          style: TextStyle(
-                                                            color: selected
-                                                                ? Colors.white
-                                                                : Theme.of(context).brightness == Brightness.dark
-                                                                    ? Colors.white70
-                                                                    : Colors.black87,
-                                                            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                                                            fontSize: 13,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                            ],
-                                          ),
-                                          crossFadeState: _genresExpanded
-                                              ? CrossFadeState.showSecond
-                                              : CrossFadeState.showFirst,
-                                          duration: const Duration(milliseconds: 180),
-                                        ),
+                                        if (_genresExpanded)
+                                           Column(
+                                             crossAxisAlignment: CrossAxisAlignment.start,
+                                             children: [
+                                               const SizedBox(height: 12),
+                                               if (_genres.isEmpty)
+                                                 const Padding(
+                                                   padding: EdgeInsets.only(bottom: 12, top: 4),
+                                                   child: Text(
+                                                     'Đang tải danh sách thể loại...',
+                                                     style: TextStyle(color: Colors.grey, fontSize: 13),
+                                                   ),
+                                                 )
+                                               else
+                                                 Wrap(
+                                                   spacing: 8,
+                                                   runSpacing: 8,
+                                                   children: _genres.asMap().entries.map((entry) {
+                                                     final index = entry.key;
+                                                     final genre = entry.value;
+                                                     final selected = _selectedGenreSlugs.contains(genre.slug);
+                                                     final tagColor = _getTagColor(genre.name);
+                                                     return _StaggeredTag(
+                                                       index: index,
+                                                       child: GestureDetector(
+                                                         onTap: () => _toggleGenre(genre.slug),
+                                                         child: AnimatedContainer(
+                                                           duration: const Duration(milliseconds: 150),
+                                                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                                           decoration: BoxDecoration(
+                                                             color: selected
+                                                                 ? tagColor
+                                                                 : tagColor.withOpacity(0.08),
+                                                             borderRadius: BorderRadius.circular(20),
+                                                             border: Border.all(
+                                                               color: selected
+                                                                   ? Colors.transparent
+                                                                   : tagColor.withOpacity(0.25),
+                                                               width: 1,
+                                                             ),
+                                                             boxShadow: selected
+                                                                 ? [
+                                                                     BoxShadow(
+                                                                       color: tagColor.withOpacity(0.3),
+                                                                       blurRadius: 6,
+                                                                       offset: const Offset(0, 3),
+                                                                     )
+                                                                   ]
+                                                                 : [],
+                                                           ),
+                                                           child: Text(
+                                                             genre.name,
+                                                             style: TextStyle(
+                                                               color: selected
+                                                                   ? Colors.white
+                                                                   : tagColor,
+                                                               fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+                                                               fontSize: 13,
+                                                             ),
+                                                           ),
+                                                         ),
+                                                       ),
+                                                     );
+                                                   }).toList(),
+                                                 ),
+                                             ],
+                                           ),
                                         const SizedBox(height: 16),
                                         Divider(
                                           height: 1,
@@ -1120,6 +1122,65 @@ class _PagePickerBottomSheetState extends State<_PagePickerBottomSheet> {
       widget.onSubmitted(pageNum);
     }
     Navigator.pop(context);
+  }
+}
+
+class _StaggeredTag extends StatefulWidget {
+  final Widget child;
+  final int index;
+
+  const _StaggeredTag({
+    required this.child,
+    required this.index,
+  });
+
+  @override
+  State<_StaggeredTag> createState() => _StaggeredTagState();
+}
+
+class _StaggeredTagState extends State<_StaggeredTag> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<Offset> _slide;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _slide = Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+
+    _timer = Timer(Duration(milliseconds: widget.index * 30), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(
+        position: _slide,
+        child: widget.child,
+      ),
+    );
   }
 }
 

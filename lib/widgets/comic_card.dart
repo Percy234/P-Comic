@@ -37,58 +37,64 @@ class ComicCard extends StatelessWidget {
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.network(
-                          comic.imageUrl,
-                          fit: BoxFit.cover,
-                          cacheWidth: 600,
-                          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                            if (wasSynchronouslyLoaded) return child;
-                            final isLoaded = frame != null;
-                            return AnimatedCrossFade(
-                              firstChild: ShimmerPlaceholder(
-                                width: double.infinity,
-                                height: double.infinity,
-                                borderRadius: BorderRadius.circular(12),
-                                enabled: !isLoaded,
-                              ),
-                              secondChild: child,
-                              crossFadeState: !isLoaded
-                                  ? CrossFadeState.showFirst
-                                  : CrossFadeState.showSecond,
-                              duration: const Duration(milliseconds: 300),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[900]
-                                  : Colors.grey[200],
-                              child: const Center(
-                                child: Icon(Icons.broken_image_rounded, color: Colors.grey),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(4),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cardWidth = constraints.maxWidth;
+                      final cardHeight = constraints.maxHeight;
+                      return Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Image.network(
+                              comic.imageUrl,
+                              fit: BoxFit.cover,
+                              cacheWidth: 600,
+                              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                                if (wasSynchronouslyLoaded) return child;
+                                final isLoaded = frame != null;
+                                return AnimatedCrossFade(
+                                  firstChild: ShimmerPlaceholder(
+                                    width: cardWidth,
+                                    height: cardHeight,
+                                    borderRadius: BorderRadius.circular(12),
+                                    enabled: !isLoaded,
+                                  ),
+                                  secondChild: child,
+                                  crossFadeState: !isLoaded
+                                      ? CrossFadeState.showFirst
+                                      : CrossFadeState.showSecond,
+                                  duration: const Duration(milliseconds: 300),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.grey[900]
+                                      : Colors.grey[200],
+                                  child: const Center(
+                                    child: Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                          child: Text(
-                            comic.timeAgo,
-                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                comic.timeAgo,
+                                style: const TextStyle(color: Colors.white, fontSize: 10),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
