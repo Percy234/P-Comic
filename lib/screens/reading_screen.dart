@@ -116,6 +116,122 @@ class _ReadingScreenState extends State<ReadingScreen> {
     _startHideTimer();
   }
 
+  void _showChapterList(BuildContext context) {
+    if (widget.chapters == null || widget.chapters!.isEmpty) return;
+
+    _hideTimer?.cancel();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final size = MediaQuery.of(context).size;
+        
+        return Container(
+          height: size.height * 0.65,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Danh sách chương',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Divider(
+                height: 1,
+                color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: widget.chapters!.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+                    indent: 24,
+                    endIndent: 24,
+                  ),
+                  itemBuilder: (context, index) {
+                    final originalIndex = widget.chapters!.length - 1 - index;
+                    final chapter = widget.chapters![originalIndex];
+                    final isCurrent = originalIndex == _currentIndex;
+                    final rawName = chapter.name;
+                    final displayChapterName = rawName.toLowerCase().startsWith('chương') ||
+                                               rawName.toLowerCase().startsWith('chap')
+                        ? rawName
+                        : 'Chương $rawName';
+
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
+                      title: Text(
+                        displayChapterName,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                          color: isCurrent
+                              ? const Color(0xFFF57C00)
+                              : (isDark ? Colors.white : Colors.black87),
+                        ),
+                      ),
+                      trailing: isCurrent
+                          ? const Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFFF57C00),
+                              size: 20,
+                            )
+                          : null,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToChapter(originalIndex);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) {
+      _startHideTimer();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasNavigation = widget.chapters != null && _currentIndex != -1;
@@ -359,18 +475,27 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
                       // Center Chapter Name/Number
                       Expanded(
-                        child: Text(
-                          _currentChapterName.toLowerCase().startsWith('chương') ||
-                                  _currentChapterName.toLowerCase().startsWith('chap')
-                              ? _currentChapterName
-                              : 'Chương $_currentChapterName',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                        child: InkWell(
+                          onTap: (widget.chapters != null && widget.chapters!.isNotEmpty)
+                              ? () => _showChapterList(context)
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            child: Text(
+                              _currentChapterName.toLowerCase().startsWith('chương') ||
+                                      _currentChapterName.toLowerCase().startsWith('chap')
+                                  ? _currentChapterName
+                                  : 'Chương $_currentChapterName',
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),

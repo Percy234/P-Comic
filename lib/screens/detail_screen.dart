@@ -21,6 +21,28 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  bool _isIntroExpanded = false;
+
+  bool _isContentLong(String htmlContent) {
+    final cleanText = htmlContent.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
+    return cleanText.length > 200;
+  }
+
+  Color _getTagColor(String name) {
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+    final double hue = (hash.abs() % 360).toDouble();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return HSLColor.fromAHSL(
+      1.0,
+      hue,
+      0.75,
+      isDark ? 0.70 : 0.40,
+    ).toColor();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -482,6 +504,65 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                     ),
                   ),
+                  if (comic.categories.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 20,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Thể loại',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: comic.categories.map((category) {
+                                  final tagColor = _getTagColor(category.name);
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: tagColor.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: tagColor.withOpacity(0.35),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      category.name,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: tagColor,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -509,24 +590,103 @@ class _DetailScreenState extends State<DetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            DefaultTextStyle(
-                              style: TextStyle(
-                                fontSize: 15,
-                                height: 1.4,
-                                color: Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white70
-                                    : Colors.black87,
-                              ),
-                              child: Html(
-                                data: comic.content,
-                                style: {
-                                  'body': Style(
-                                    margin: Margins.zero,
-                                    padding: HtmlPaddings.zero,
+                            if (!_isContentLong(comic.content))
+                              DefaultTextStyle(
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white70
+                                      : Colors.black87,
+                                ),
+                                child: Html(
+                                  data: comic.content,
+                                  style: {
+                                    'body': Style(
+                                      margin: Margins.zero,
+                                      padding: HtmlPaddings.zero,
+                                    ),
+                                  },
+                                ),
+                              )
+                            else ...[
+                              Stack(
+                                children: [
+                                  AnimatedSize(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeInOut,
+                                    child: ConstrainedBox(
+                                      constraints: _isIntroExpanded
+                                          ? const BoxConstraints()
+                                          : const BoxConstraints(maxHeight: 120),
+                                      child: DefaultTextStyle(
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          height: 1.4,
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? Colors.white70
+                                              : Colors.black87,
+                                        ),
+                                        child: Html(
+                                          data: comic.content,
+                                          style: {
+                                            'body': Style(
+                                              margin: Margins.zero,
+                                              padding: HtmlPaddings.zero,
+                                            ),
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                },
+                                  if (!_isIntroExpanded)
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 60,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Theme.of(context).cardColor.withOpacity(0.0),
+                                              Theme.of(context).cardColor.withOpacity(0.8),
+                                              Theme.of(context).cardColor,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ),
+                              const SizedBox(height: 8),
+                              Center(
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      _isIntroExpanded = !_isIntroExpanded;
+                                    });
+                                  },
+                                  icon: Icon(
+                                    _isIntroExpanded
+                                        ? Icons.keyboard_arrow_up_rounded
+                                        : Icons.keyboard_arrow_down_rounded,
+                                    color: const Color(0xFFF57C00),
+                                    size: 22,
+                                  ),
+                                  label: Text(
+                                    _isIntroExpanded ? 'Rút gọn' : 'Xem thêm',
+                                    style: const TextStyle(
+                                      color: Color(0xFFF57C00),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
