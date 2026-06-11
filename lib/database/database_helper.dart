@@ -77,6 +77,7 @@ class DatabaseHelper {
     required String slug,
     required String thumbUrl,
     required String chapterName,
+    String? visitedAt,
   }) async {
     final key = '${userId}_$comicId';
     await _historiesBox.put(key, {
@@ -86,7 +87,7 @@ class DatabaseHelper {
       'slug': slug,
       'thumbUrl': thumbUrl,
       'chapterName': chapterName,
-      'visitedAt': DateTime.now().toIso8601String(),
+      'visitedAt': visitedAt ?? DateTime.now().toIso8601String(),
     });
   }
 

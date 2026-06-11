@@ -30,7 +30,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DetailProvider()),
         ChangeNotifierProvider(create: (_) => ReadingProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
-        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()..loadHistories()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
