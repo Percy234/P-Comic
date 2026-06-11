@@ -141,9 +141,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     const SizedBox(height: 24),
                                     
-                                    // Email input
+                                    // Email or Username input
                                     Text(
-                                      'Email',
+                                      'Email hoặc Tên đăng nhập',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
@@ -161,14 +161,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       child: TextField(
                                         controller: emailController,
-                                        keyboardType: TextInputType.emailAddress,
+                                        keyboardType: TextInputType.text,
                                         cursorColor: const Color(0xFFF57C00),
                                         decoration: InputDecoration(
                                           prefixIcon: Icon(
-                                            Icons.email_rounded,
+                                            Icons.person_rounded,
                                             color: isDark ? Colors.grey[400] : Colors.grey[600],
                                           ),
-                                          hintText: 'Nhập email của bạn',
+                                          hintText: 'Nhập email hoặc tên đăng nhập',
                                           hintStyle: TextStyle(
                                             color: isDark ? Colors.grey[500] : Colors.grey[400],
                                             fontSize: 14,
@@ -302,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         onPressed: auth.isLoading ? () {} : () async {
                                           if (emailController.text.trim().isEmpty) {
                                             ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Vui lòng nhập email')),
+                                              const SnackBar(content: Text('Vui lòng nhập email hoặc tên đăng nhập')),
                                             );
                                             return;
                                           }
@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             return;
                                           }
                                           final success = await auth.login(
-                                            email: emailController.text.trim(),
+                                            emailOrUsername: emailController.text.trim(),
                                             password: passwordController.text.trim(),
                                           );
                                           if (success && context.mounted) {

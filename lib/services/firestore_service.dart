@@ -250,4 +250,49 @@ class FirestoreService {
     // 3. Thực hiện commit toàn bộ
     await batch.commit();
   }
+
+  // Kiểm tra tên đăng nhập đã được sử dụng chưa
+  Future<bool> isUsernameTaken(String username) async {
+    final normalized = username.trim().toLowerCase();
+    final doc = await _db.collection('usernames').doc(normalized).get();
+    return doc.exists;
+  }
+
+  // Lưu ánh xạ username sang email và uid
+  Future<void> saveUsername({
+    required String username,
+    required String email,
+    required String uid,
+  }) async {
+    final normalized = username.trim().toLowerCase();
+    await _db.collection('usernames').doc(normalized).set({
+      'username': username.trim(),
+      'email': email.trim().toLowerCase(),
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Lấy email liên kết với username
+  Future<String?> getEmailByUsername(String username) async {
+    final normalized = username.trim().toLowerCase();
+    final doc = await _db.collection('usernames').doc(normalized).get();
+    if (doc.exists) {
+      final data = doc.data();
+      return data?['email'] as String?;
+    }
+    return null;
+  }
+
+  // Xóa tên đăng nhập giải phóng khi xóa tài khoản
+  Future<void> deleteUsernameByUid(String uid) async {
+    final snapshot = await _db
+        .collection('usernames')
+        .where('uid', isEqualTo: uid)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isNotEmpty) {
+      await snapshot.docs.first.reference.delete();
+    }
+  }
 }

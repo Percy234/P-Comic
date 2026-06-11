@@ -40,6 +40,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> register({
+    required String username,
     required String email,
     required String password,
   }) async {
@@ -48,16 +49,43 @@ class AuthProvider extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
+      final normalizedUsername = username.trim();
+      if (normalizedUsername.isEmpty) {
+        errorMessage = 'Tên đăng nhập không được để trống.';
+        return false;
+      }
+      
+      final usernameRegExp = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
+      if (!usernameRegExp.hasMatch(normalizedUsername)) {
+        errorMessage = 'Tên đăng nhập chỉ được chứa chữ cái, số, dấu gạch dưới (_) và có độ dài từ 3-20 ký tự.';
+        return false;
+      }
+
+      final isTaken = await FirestoreService().isUsernameTaken(normalizedUsername);
+      if (isTaken) {
+        errorMessage = 'Tên đăng nhập này đã được sử dụng.';
+        return false;
+      }
+
       final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       
-      // Gửi email xác thực trong try-catch riêng để không làm gián đoạn luồng đăng ký
-      try {
-        await credential.user?.sendEmailVerification();
-      } catch (emailError) {
-        debugPrint('LỖI GỬI EMAIL XÁC THỰC KHI ĐĂNG KÝ: $emailError');
-        errorMessage = 'Đăng ký thành công nhưng không thể gửi email xác thực: $emailError';
-        // Vẫn return true vì tài khoản đã được tạo thành công
-        return true;
+      final user = credential.user;
+      if (user != null) {
+        await user.updateDisplayName(normalizedUsername);
+        await FirestoreService().saveUsername(
+          username: normalizedUsername,
+          email: email.trim(),
+          uid: user.uid,
+        );
+
+        // Gửi email xác thực trong try-catch riêng để không làm gián đoạn luồng đăng ký
+        try {
+          await user.sendEmailVerification();
+        } catch (emailError) {
+          debugPrint('LỖI GỬI EMAIL XÁC THỰC KHI ĐĂNG KÝ: $emailError');
+          errorMessage = 'Đăng ký thành công nhưng không thể gửi email xác thực: $emailError';
+          return true;
+        }
       }
       
       return true;
@@ -93,13 +121,23 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login({
-    required String email,
+    required String emailOrUsername,
     required String password,
   }) async {
     try {
       isLoading = true;
       errorMessage = null;
       notifyListeners();
+
+      String email = emailOrUsername.trim();
+      if (!email.contains('@')) {
+        final resolvedEmail = await FirestoreService().getEmailByUsername(email);
+        if (resolvedEmail == null) {
+          errorMessage = 'Tên đăng nhập không tồn tại.';
+          return false;
+        }
+        email = resolvedEmail;
+      }
 
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return true;
@@ -127,6 +165,7 @@ class AuthProvider extends ChangeNotifier {
       if (currentUser != null) {
         // Xóa dữ liệu Firestore của User trước khi xóa tài khoản Auth
         await FirestoreService().deleteUserData(currentUser.uid);
+        await FirestoreService().deleteUsernameByUid(currentUser.uid);
 
         await currentUser.delete();
         notifyListeners();

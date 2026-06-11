@@ -15,6 +15,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
@@ -26,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
@@ -143,9 +145,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         color: isDark ? Colors.grey[400] : Colors.grey[600],
                                       ),
                                     ),
-                                    const SizedBox(height: 24),
-                                    
-                                    // Email input
+                                     const SizedBox(height: 24),
+                                     
+                                     // Tên đăng nhập input
+                                     Text(
+                                       'Tên đăng nhập',
+                                       style: TextStyle(
+                                         fontWeight: FontWeight.w600,
+                                         fontSize: 14,
+                                         color: isDark ? Colors.grey[300] : Colors.grey[800],
+                                       ),
+                                     ),
+                                     const SizedBox(height: 8),
+                                     Container(
+                                       decoration: BoxDecoration(
+                                         color: isDark ? Colors.black.withOpacity(0.25) : Colors.grey[100],
+                                         borderRadius: BorderRadius.circular(12),
+                                         border: Border.all(
+                                           color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                         ),
+                                       ),
+                                       child: TextField(
+                                         controller: usernameController,
+                                         keyboardType: TextInputType.text,
+                                         cursorColor: const Color(0xFFF57C00),
+                                         decoration: InputDecoration(
+                                           prefixIcon: Icon(
+                                             Icons.account_circle_rounded,
+                                             color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                           ),
+                                           hintText: 'Nhập tên đăng nhập của bạn (3-20 ký tự)',
+                                           hintStyle: TextStyle(
+                                             color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                             fontSize: 14,
+                                           ),
+                                           border: InputBorder.none,
+                                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                                         ),
+                                         style: TextStyle(
+                                           fontSize: 15,
+                                           color: isDark ? Colors.white : Colors.black87,
+                                         ),
+                                       ),
+                                     ),
+                                     const SizedBox(height: 16),
+
+                                     // Email input
                                     Text(
                                       'Email',
                                       style: TextStyle(
@@ -360,6 +405,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           ),
                                         ),
                                         onPressed: auth.isLoading ? () {} : () async {
+                                          if (usernameController.text.trim().isEmpty) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Vui lòng nhập tên đăng nhập')),
+                                            );
+                                            return;
+                                          }
+                                          final usernameRegExp = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
+                                          if (!usernameRegExp.hasMatch(usernameController.text.trim())) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Tên đăng nhập chỉ được chứa chữ cái, số, dấu gạch dưới (_) và từ 3-20 ký tự.')),
+                                            );
+                                            return;
+                                          }
                                           if (emailController.text.trim().isEmpty) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(content: Text('Vui lòng nhập email')),
@@ -379,6 +437,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             return;
                                           }
                                           final success = await auth.register(
+                                            username: usernameController.text.trim(),
                                             email: emailController.text.trim(),
                                             password: passwordController.text.trim(),
                                           );
