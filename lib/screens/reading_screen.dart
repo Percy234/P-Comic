@@ -769,6 +769,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
                               timeStr = '';
                             }
 
+                            final isOwner = auth.user != null && comment['userId'] == auth.user!.uid;
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
                               child: Row(
@@ -824,6 +826,75 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                       ],
                                     ),
                                   ),
+                                  if (isOwner) ...[
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete_outline,
+                                        size: 18,
+                                        color: isDark ? Colors.red[300] : Colors.red[600],
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      splashRadius: 20,
+                                      onPressed: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: stateContext,
+                                          builder: (dialogContext) {
+                                            return AlertDialog(
+                                              title: const Text('Xóa bình luận'),
+                                              content: const Text('Bạn có chắc chắn muốn xóa bình luận này không?'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                                  child: Text(
+                                                    'Hủy',
+                                                    style: TextStyle(
+                                                      color: isDark ? Colors.white70 : Colors.black87,
+                                                    ),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(dialogContext, true),
+                                                  child: const Text(
+                                                    'Xóa',
+                                                    style: TextStyle(
+                                                      color: Colors.red,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (confirm == true) {
+                                          try {
+                                            await _firestoreService.deleteComment(
+                                              roomId: _commentRoomId,
+                                              commentId: comment['id'],
+                                            );
+                                            if (stateContext.mounted) {
+                                              ScaffoldMessenger.of(stateContext).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Đã xóa bình luận thành công'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (stateContext.mounted) {
+                                              ScaffoldMessenger.of(stateContext).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Lỗi khi xóa bình luận: $e'),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ],
                               ),
                             );

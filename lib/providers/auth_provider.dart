@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firestore_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -47,7 +48,18 @@ class AuthProvider extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      
+      // Gửi email xác thực trong try-catch riêng để không làm gián đoạn luồng đăng ký
+      try {
+        await credential.user?.sendEmailVerification();
+      } catch (emailError) {
+        debugPrint('LỖI GỬI EMAIL XÁC THỰC KHI ĐĂNG KÝ: $emailError');
+        errorMessage = 'Đăng ký thành công nhưng không thể gửi email xác thực: $emailError';
+        // Vẫn return true vì tài khoản đã được tạo thành công
+        return true;
+      }
+      
       return true;
     } on FirebaseAuthException catch (e) {
       errorMessage = _translateError(e);
@@ -55,6 +67,28 @@ class AuthProvider extends ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> reloadUser() async {
+    await user?.reload();
+    notifyListeners();
+  }
+
+  Future<bool> sendVerificationEmail() async {
+    try {
+      await user?.sendEmailVerification();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('LỖI FIREBASE AUTH GỬI LẠI EMAIL: ${e.code} - ${e.message}');
+      errorMessage = 'Lỗi xác thực email: ${_translateError(e)} (Mã: ${e.code})';
+      notifyListeners();
+      return false;
+    } catch (e) {
+      debugPrint('LỖI KHÁC KHI GỬI LẠI EMAIL: $e');
+      errorMessage = 'Lỗi gửi email: $e';
+      notifyListeners();
+      return false;
     }
   }
 
@@ -81,5 +115,39 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _auth.signOut();
     notifyListeners();
+  }
+
+  Future<bool> deleteAccount() async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        // Xóa dữ liệu Firestore của User trước khi xóa tài khoản Auth
+        await FirestoreService().deleteUserData(currentUser.uid);
+
+        await currentUser.delete();
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        errorMessage = 'Hành động này yêu cầu xác thực gần đây. Vui lòng đăng xuất và đăng nhập lại trước khi xóa tài khoản.';
+      } else {
+        errorMessage = _translateError(e);
+      }
+      notifyListeners();
+      return false;
+    } catch (e) {
+      errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

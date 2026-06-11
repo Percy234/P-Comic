@@ -294,12 +294,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.transparent,
                                           shadowColor: Colors.transparent,
-                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          minimumSize: const Size(double.infinity, 50),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
                                         ),
-                                        onPressed: auth.isLoading ? null : () async {
+                                        onPressed: auth.isLoading ? () {} : () async {
                                           if (emailController.text.trim().isEmpty) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(content: Text('Vui lòng nhập email')),

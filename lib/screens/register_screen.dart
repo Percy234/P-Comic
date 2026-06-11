@@ -5,6 +5,7 @@ import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
 import 'main_shell.dart';
 import 'login_screen.dart';
+import 'verify_email_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -353,12 +354,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.transparent,
                                           shadowColor: Colors.transparent,
-                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          minimumSize: const Size(double.infinity, 50),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
                                         ),
-                                        onPressed: auth.isLoading ? null : () async {
+                                        onPressed: auth.isLoading ? () {} : () async {
                                           if (emailController.text.trim().isEmpty) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(content: Text('Vui lòng nhập email')),
@@ -382,7 +383,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             password: passwordController.text.trim(),
                                           );
                                           if (success && context.mounted) {
-                                            Navigator.pop(context);
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => const VerifyEmailScreen(),
+                                              ),
+                                            );
                                           }
                                         },
                                         child: auth.isLoading

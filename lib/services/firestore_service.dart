@@ -197,4 +197,57 @@ class FirestoreService {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
+
+  // Xóa bình luận của một chương truyện trên Firestore
+  Future<void> deleteComment({
+    required String roomId,
+    required String commentId,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('Vui lòng đăng nhập để thực hiện');
+
+    final docRef = _db
+        .collection('chapter_comments')
+        .doc(roomId)
+        .collection('messages')
+        .doc(commentId);
+
+    final docSnap = await docRef.get();
+    if (!docSnap.exists) throw Exception('Bình luận không tồn tại');
+
+    final data = docSnap.data();
+    if (data == null || data['userId'] != user.uid) {
+      throw Exception('Bạn không có quyền xóa bình luận này');
+    }
+
+    await docRef.delete();
+  }
+
+  // Xóa toàn bộ dữ liệu (Yêu thích & Lịch sử) của một User khi xóa tài khoản
+  Future<void> deleteUserData(String userId) async {
+    final batch = _db.batch();
+
+    // 1. Lấy danh sách favorites
+    final favSnapshot = await _db
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .get();
+    for (final doc in favSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // 2. Lấy danh sách histories
+    final histSnapshot = await _db
+        .collection('users')
+        .doc(userId)
+        .collection('histories')
+        .get();
+    for (final doc in histSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // 3. Thực hiện commit toàn bộ
+    await batch.commit();
+  }
 }

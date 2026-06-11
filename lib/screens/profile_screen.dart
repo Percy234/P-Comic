@@ -117,6 +117,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _confirmDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+              SizedBox(width: 8),
+              Text('Xóa tài khoản?'),
+            ],
+          ),
+          content: const Text(
+            'Hành động này sẽ xóa vĩnh viễn tài khoản của bạn và không thể khôi phục lại. Bạn có chắc chắn muốn tiếp tục?',
+            style: TextStyle(height: 1.4),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Hủy',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Đóng dialog
+                
+                // Hiển thị loading spinner dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFF57C00),
+                    ),
+                  ),
+                );
+
+                final auth = context.read<AuthProvider>();
+                final success = await auth.deleteAccount();
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Đóng loading dialog
+                  
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tài khoản của bạn đã được xóa thành công.'),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (errorContext) => AlertDialog(
+                        title: const Text('Lỗi khi xóa tài khoản'),
+                        content: Text(auth.errorMessage ?? 'Không thể xóa tài khoản lúc này. Vui lòng thử lại sau.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(errorContext),
+                            child: const Text('Đồng ý', style: TextStyle(color: Color(0xFFF57C00))),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text(
+                'Xóa vĩnh viễn',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildGuestContent(BuildContext context) {
     return const RequireLoginPlaceholder(
       icon: Icons.account_circle_rounded,
@@ -323,6 +410,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFFE57373)
                         : const Color(0xFFC62828),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Delete Account Button
+        InkWell(
+          onTap: () => _confirmDeleteAccount(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD32F2F),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD32F2F).withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.delete_forever_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Xóa tài khoản',
+                  style: TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
