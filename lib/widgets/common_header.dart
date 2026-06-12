@@ -8,6 +8,11 @@ import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/detail_screen.dart';
 
+class TabSwitchNotification extends Notification {
+  final int index;
+  const TabSwitchNotification(this.index);
+}
+
 class CommonHeader extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String> onSearchChanged;
@@ -134,25 +139,82 @@ class _CommonHeaderState extends State<CommonHeader> {
         ),
         const SizedBox(width: 8),
         if (auth.isLoggedIn) ...[
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF57C00),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                (auth.user?.email?.isNotEmpty ?? false)
-                    ? auth.user!.email![0].toUpperCase()
-                    : 'U',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          Builder(
+            builder: (context) {
+              final user = auth.user;
+              final photoUrl = user?.photoURL;
+              final displayName = user?.displayName ?? '';
+              final parts = displayName.split(' | ');
+              final username = parts.isNotEmpty && parts[0].isNotEmpty
+                  ? parts[0]
+                  : (user?.email != null && user!.email!.contains('@')
+                      ? user.email!.split('@')[0]
+                      : 'user');
+              final initial = username.isNotEmpty ? username[0].toUpperCase() : 'U';
+
+              return GestureDetector(
+                onTap: () {
+                  const TabSwitchNotification(4).dispatch(context);
+                },
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF57C00),
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: photoUrl != null && photoUrl.isNotEmpty
+                          ? (photoUrl.startsWith('assets/')
+                              ? Image.asset(
+                                  photoUrl,
+                                  width: 36,
+                                  height: 36,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) => Center(
+                                    child: Text(
+                                      initial,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Image.network(
+                                  photoUrl,
+                                  width: 36,
+                                  height: 36,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) => Center(
+                                    child: Text(
+                                      initial,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                          : Center(
+                              child: Text(
+                                initial,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ] else if (widget.showAuthButtons) ...[
           TextButton(

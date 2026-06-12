@@ -780,13 +780,45 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                   CircleAvatar(
                                     radius: 18,
                                     backgroundColor: avatarColor,
-                                    child: Text(
-                                      initial,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                    child: ClipOval(
+                                      child: comment['userPhotoUrl'] != null && comment['userPhotoUrl'].toString().isNotEmpty
+                                          ? (comment['userPhotoUrl'].toString().startsWith('assets/')
+                                              ? Image.asset(
+                                                  comment['userPhotoUrl'].toString(),
+                                                  width: 36,
+                                                  height: 36,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stack) => Text(
+                                                    initial,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Image.network(
+                                                  comment['userPhotoUrl'].toString(),
+                                                  width: 36,
+                                                  height: 36,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stack) => Text(
+                                                    initial,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ))
+                                          : Text(
+                                              initial,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),

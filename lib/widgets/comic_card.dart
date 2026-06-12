@@ -46,6 +46,8 @@ class ComicCard extends StatelessWidget {
                           Positioned.fill(
                             child: Image.network(
                               comic.imageUrl,
+                              width: cardWidth,
+                              height: cardHeight,
                               fit: BoxFit.cover,
                               cacheWidth: 600,
                               frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {

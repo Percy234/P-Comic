@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'favorite_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
+import '../widgets/common_header.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -48,7 +49,15 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: currentIndex, children: pages),
+      body: NotificationListener<TabSwitchNotification>(
+        onNotification: (notification) {
+          setState(() {
+            currentIndex = notification.index;
+          });
+          return true;
+        },
+        child: IndexedStack(index: currentIndex, children: pages),
+      ),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           final double totalWidth = constraints.maxWidth;

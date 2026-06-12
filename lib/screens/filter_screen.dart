@@ -133,21 +133,44 @@ class _FilterScreenState extends State<FilterScreen> {
       }
 
       loadedComics = uniqueComics.values.toList();
+      final tempFiltered = _applyLocalFilters(loadedComics);
+
+      if (tempFiltered.isEmpty && localComics.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Trang $page không có truyện hoặc không tồn tại!'),
+              backgroundColor: const Color(0xFFC62828),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        setState(() => _loadingLocal = false);
+        return;
+      }
+
+      localComics = tempFiltered;
       if (responses.isNotEmpty) {
         _localPage = page;
       }
 
       if (selectedGenres.isEmpty && selectedStatuses.isEmpty) {
         final resp = responses.first;
-        loadedComics = resp.comics;
+        localComics = resp.comics;
         _localPage = resp.currentPage;
       } else if (useStatusBatch) {
         _localPage = page;
       }
-
-      localComics = _applyLocalFilters(loadedComics);
     } catch (e) {
-      // keep localComics as-is
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Trang $page không tồn tại hoặc có lỗi xảy ra!'),
+            backgroundColor: const Color(0xFFC62828),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
     setState(() => _loadingLocal = false);
     if (!mounted || !_scrollController.hasClients) return;

@@ -1,6 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:http/http.dart' as http;
 import '../providers/auth_provider.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
@@ -218,8 +224,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     FavoriteProvider favoriteProvider,
     HistoryProvider historyProvider,
   ) {
-    final email = user.email ?? '';
-    final initial = email.isNotEmpty ? email[0].toUpperCase() : 'U';
+    final displayName = user.displayName ?? '';
+    final parts = displayName.split(' | ');
+    final username = parts.isNotEmpty && parts[0].isNotEmpty
+        ? parts[0]
+        : (user.email != null && user.email!.contains('@') ? user.email!.split('@')[0] : 'user');
+    final initial = username.isNotEmpty ? username[0].toUpperCase() : 'U';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,15 +264,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: Center(
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE65100),
-                        ),
-                      ),
+                    child: ClipOval(
+                      child: user.photoURL != null && user.photoURL!.isNotEmpty
+                          ? (user.photoURL!.startsWith('assets/')
+                              ? Image.asset(
+                                  user.photoURL!,
+                                  width: 68,
+                                  height: 68,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) => Center(
+                                    child: Text(
+                                      initial,
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFE65100),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Image.network(
+                                  user.photoURL!,
+                                  width: 68,
+                                  height: 68,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) => Center(
+                                    child: Text(
+                                      initial,
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFE65100),
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                          : Center(
+                              child: Text(
+                                initial,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFE65100),
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -272,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          email,
+                          username,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -332,6 +378,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 24),
 
         // Settings / Options Menu
+        _buildMenuTile(
+          icon: Icons.settings_rounded,
+          iconColor: const Color(0xFFF57C00),
+          title: 'Cài đặt cá nhân',
+          subtitle: 'Thiết lập ảnh đại diện và biệt danh bình luận',
+          onTap: () {
+            _showPersonalSettingsBottomSheet(context, user);
+          },
+        ),
+        const SizedBox(height: 12),
         _buildMenuTile(
           icon: Icons.favorite_outline_rounded,
           iconColor: const Color(0xFFE53935),
@@ -728,6 +784,386 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showPersonalSettingsBottomSheet(BuildContext context, User user) {
+    final TextEditingController nicknameController = TextEditingController();
+    
+    final displayName = user.displayName ?? '';
+    final parts = displayName.split(' | ');
+    final username = parts.isNotEmpty && parts[0].isNotEmpty
+        ? parts[0]
+        : (user.email != null && user.email!.contains('@') ? user.email!.split('@')[0] : 'user');
+    final currentNickname = parts.length > 1 ? parts[1] : '';
+    nicknameController.text = currentNickname;
+
+    String selectedAvatarUrl = user.photoURL ?? '';
+    bool isSaving = false;
+
+    final List<String> defaultAvatars = [
+      'assets/images/arlecchino.jpg',
+      'assets/images/ayaka.jpg',
+      'assets/images/ayato.jpg',
+      'assets/images/childe.jpg',
+      'assets/images/cyno.jpg',
+      'assets/images/diluc.jpg',
+      'assets/images/durin.jpg',
+      'assets/images/furina.jpg',
+      'assets/images/kazuha.jpg',
+      'assets/images/killua.jpg',
+      'assets/images/wanderer.jpg',
+      'assets/images/zhongli.jpg',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (stateContext, setSheetState) {
+            final theme = Theme.of(stateContext);
+            final isDark = theme.brightness == Brightness.dark;
+
+            Future<void> saveSettings() async {
+              setSheetState(() {
+                isSaving = true;
+              });
+
+              try {
+                // Cập nhật photoURL của Firebase Auth trực tiếp với link avatar được chọn
+                if (selectedAvatarUrl != user.photoURL) {
+                  await user.updatePhotoURL(selectedAvatarUrl.isNotEmpty ? selectedAvatarUrl : null);
+                }
+
+                final nickname = nicknameController.text.trim();
+                String newDisplayName = username;
+                if (nickname.isNotEmpty) {
+                  newDisplayName = '$username | $nickname';
+                }
+                await user.updateDisplayName(newDisplayName);
+
+                if (context.mounted) {
+                  await context.read<AuthProvider>().reloadUser();
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Cập nhật thông tin cá nhân thành công!'),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+
+                if (stateContext.mounted) {
+                  Navigator.pop(stateContext);
+                }
+              } catch (e) {
+                if (stateContext.mounted) {
+                  showDialog(
+                    context: stateContext,
+                    builder: (errContext) => AlertDialog(
+                      title: const Text('Lỗi cập nhật'),
+                      content: Text(e.toString()),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(errContext),
+                          child: const Text('Đồng ý'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              } finally {
+                setSheetState(() {
+                  isSaving = false;
+                });
+              }
+            }
+
+            return Container(
+              padding: EdgeInsets.only(
+                top: 16,
+                left: 24,
+                right: 24,
+                bottom: MediaQuery.of(stateContext).viewInsets.bottom + 24,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : Colors.black12,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Cài đặt cá nhân',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Preview Avatar được chọn
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFF57C00),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: selectedAvatarUrl.isNotEmpty
+                            ? (selectedAvatarUrl.startsWith('assets/')
+                                ? Image.asset(
+                                    selectedAvatarUrl,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) =>
+                                        _buildInitialAvatar(username.isNotEmpty ? username[0].toUpperCase() : 'U', 100),
+                                  )
+                                : Image.network(
+                                    selectedAvatarUrl,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) =>
+                                        _buildInitialAvatar(username.isNotEmpty ? username[0].toUpperCase() : 'U', 100),
+                                  ))
+                            : _buildInitialAvatar(username.isNotEmpty ? username[0].toUpperCase() : 'U', 100),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Chọn ảnh đại diện mặc định',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.grey[400] : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Grid danh sách avatar mặc định dạng cuộn ngang
+                    SizedBox(
+                      height: 72,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: defaultAvatars.length,
+                        itemBuilder: (context, index) {
+                          final avatarUrl = defaultAvatars[index];
+                          final isSelected = selectedAvatarUrl == avatarUrl;
+
+                          return GestureDetector(
+                            onTap: isSaving
+                                ? null
+                                : () {
+                                    setSheetState(() {
+                                      selectedAvatarUrl = avatarUrl;
+                                    });
+                                  },
+                            child: Center(
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                width: 62,
+                                height: 62,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFFF57C00) : Colors.grey[300]!,
+                                    width: isSelected ? 3 : 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      avatarUrl,
+                                      width: 56,
+                                      height: 56,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) => Container(
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: Icon(Icons.broken_image_rounded, size: 20, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Biệt danh hiển thị bình luận',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.grey[400] : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: nicknameController,
+                      enabled: !isSaving,
+                      maxLength: 15,
+                      decoration: InputDecoration(
+                        hintText: 'Nhập biệt danh của bạn...',
+                        hintStyle: TextStyle(
+                          color: isDark ? Colors.white30 : Colors.black38,
+                          fontSize: 14,
+                        ),
+                        counterText: '',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: isSaving ? null : () => Navigator.pop(stateContext),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Hủy',
+                              style: TextStyle(
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFF57C00), Color(0xFFE65100)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE65100).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: isSaving ? null : saveSettings,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: isSaving
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Lưu thay đổi',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildInitialAvatar(String text, double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: Colors.grey[300],
+      child: Center(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: size * 0.4,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFE65100),
+          ),
+        ),
+      ),
     );
   }
 }

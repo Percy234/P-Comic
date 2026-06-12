@@ -177,11 +177,19 @@ class FirestoreService {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('Vui lòng đăng nhập để bình luận');
 
-    final userName = user.displayName != null && user.displayName!.isNotEmpty
-        ? user.displayName
-        : (user.email != null && user.email!.contains('@')
-            ? user.email!.split('@')[0]
-            : 'Thành viên');
+    final rawDisplayName = user.displayName ?? '';
+    final parts = rawDisplayName.split(' | ');
+    
+    final String userName;
+    if (parts.length > 1 && parts[1].trim().isNotEmpty) {
+      userName = parts[1].trim(); // Sử dụng biệt danh khi bình luận
+    } else if (parts.isNotEmpty && parts[0].trim().isNotEmpty) {
+      userName = parts[0].trim(); // Fallback về tên đăng nhập
+    } else {
+      userName = user.email != null && user.email!.contains('@')
+          ? user.email!.split('@')[0]
+          : 'Thành viên';
+    }
 
     final ref = _db
         .collection('chapter_comments')
@@ -193,6 +201,7 @@ class FirestoreService {
       'id': ref.id,
       'userId': user.uid,
       'userName': userName,
+      'userPhotoUrl': user.photoURL, // Lưu link avatar của người bình luận
       'content': content,
       'createdAt': FieldValue.serverTimestamp(),
     });
