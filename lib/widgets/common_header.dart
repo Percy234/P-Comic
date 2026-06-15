@@ -7,6 +7,7 @@ import '../providers/theme_provider.dart';
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/detail_screen.dart';
+import '../screens/ai_search_screen.dart';
 
 class TabSwitchNotification extends Notification {
   final int index;
@@ -123,6 +124,30 @@ class _CommonHeaderState extends State<CommonHeader> {
           ),
         ),
         const SizedBox(width: 8),
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AiSearchScreen()),
+            );
+          },
+          icon: ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Color(0xFFF57C00), Color(0xFFE040FB)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: Colors.white,
+            ),
+          ),
+          tooltip: 'Tìm kiếm bằng AI',
+          iconSize: 26,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 12),
         IconButton(
           onPressed: () {
             themeProvider.toggleTheme();

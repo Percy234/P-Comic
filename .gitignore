@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Security & Temp Files
+test_gemini.dart
+test_sdk.dart
+lib/config/api_config.dart

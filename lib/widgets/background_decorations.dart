@@ -52,7 +52,7 @@ class BackgroundDecorations extends StatelessWidget {
                 height: 450,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.red.withValues(alpha: redOpacity),
+                  color: Colors.green.withValues(alpha: redOpacity),
                 ),
               ),
             ),

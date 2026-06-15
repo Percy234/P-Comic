@@ -13,6 +13,7 @@ import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/filter_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/ai_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -34,6 +35,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AiProvider()),
       ],
       child: const MyApp(),
     ),
