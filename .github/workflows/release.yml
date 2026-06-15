@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # 4.5. Tự động tạo tệp cấu hình API tạm thời để biên dịch
+      - name: Create API Config File
+        run: |
+          mkdir -p lib/config
+          echo "class ApiConfig { static const String geminiApiKey = '${{ secrets.GEMINI_API_KEY }}'; }" > lib/config/api_config.dart
+
       # 5. Chạy phân tích mã nguồn (Tùy chọn - Không chặn build nếu có cảnh báo linter)
       - name: Analyze project
         run: flutter analyze || true
