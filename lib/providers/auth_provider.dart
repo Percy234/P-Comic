@@ -260,7 +260,17 @@ class AuthProvider extends ChangeNotifier {
       errorMessage = _translateError(e);
       return false;
     } catch (e) {
-      errorMessage = 'Lỗi đăng nhập Google: $e';
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('popup_closed') || 
+          errorStr.contains('popup-closed') || 
+          errorStr.contains('canceled') || 
+          errorStr.contains('user-cancelled')) {
+        errorMessage = 'Đã hủy đăng nhập: Bạn đã đóng cửa sổ đăng nhập Google.';
+      } else if (errorStr.contains('network')) {
+        errorMessage = 'Lỗi kết nối mạng khi thực hiện đăng nhập Google.';
+      } else {
+        errorMessage = 'Đăng nhập thất bại: $e';
+      }
       return false;
     } finally {
       isLoading = false;

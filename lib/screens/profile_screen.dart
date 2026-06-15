@@ -7,6 +7,7 @@ import '../providers/history_provider.dart';
 import '../widgets/background_decorations.dart';
 import '../widgets/common_header.dart';
 import '../widgets/require_login_placeholder.dart';
+import '../config/app_config.dart';
 import 'licenses_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -418,7 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.info_outline_rounded,
           iconColor: const Color(0xFF43A047),
           title: 'Về ứng dụng P-Comic',
-          subtitle: 'Thông tin phiên bản v1.0.0',
+          subtitle: 'Thông tin phiên bản v${AppConfig.version}',
           onTap: () {
             _showCustomAboutDialog(context);
           },
@@ -696,7 +697,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Phiên bản 1.0.0',
+                  'Phiên bản ${AppConfig.version}',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
