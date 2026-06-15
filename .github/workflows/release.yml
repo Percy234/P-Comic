@@ -46,13 +46,15 @@ jobs:
 
       # 6. Build file APK cho Android (Release mode)
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/P_Comic.apk
 
       # 7. Tự động tạo Release trên GitHub và đính kèm file APK
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/P_Comic.apk
           name: Release ${{ github.ref_name }}
           body: |
             ## Phiên bản mới ${{ github.ref_name }} đã sẵn sàng!
