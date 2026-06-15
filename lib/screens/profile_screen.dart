@@ -1,12 +1,6 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:http/http.dart' as http;
 import '../providers/auth_provider.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
@@ -230,6 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? parts[0]
         : (user.email != null && user.email!.contains('@') ? user.email!.split('@')[0] : 'user');
     final initial = username.isNotEmpty ? username[0].toUpperCase() : 'U';
+    final nickname = parts.length > 1 ? parts[1] : '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -326,16 +321,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        if (user.email != null && user.email!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            user.email!,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
-                            'Thành viên P-Comic',
-                            style: TextStyle(
+                          child: Text(
+                            nickname.isNotEmpty ? 'Biệt danh: $nickname' : 'Biệt danh: Chưa đặt',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -385,6 +391,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           subtitle: 'Thiết lập ảnh đại diện và biệt danh bình luận',
           onTap: () {
             _showPersonalSettingsBottomSheet(context, user);
+          },
+        ),
+        const SizedBox(height: 12),
+        _buildMenuTile(
+          icon: Icons.lock_outline_rounded,
+          iconColor: const Color(0xFFE040FB),
+          title: 'Đổi mật khẩu',
+          subtitle: 'Thay đổi mật khẩu đăng nhập của bạn',
+          onTap: () {
+            _showChangePasswordBottomSheet(context, user);
           },
         ),
         const SizedBox(height: 12),
@@ -846,14 +862,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 if (context.mounted) {
                   await context.read<AuthProvider>().reloadUser();
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Cập nhật thông tin cá nhân thành công!'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Cập nhật thông tin cá nhân thành công!'),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
                 }
 
                 if (stateContext.mounted) {
@@ -1128,6 +1145,320 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   : const Text(
                                       'Lưu thay đổi',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showChangePasswordBottomSheet(BuildContext context, User user) {
+    final TextEditingController oldPasswordController = TextEditingController();
+    final TextEditingController newPasswordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
+    
+    bool isSaving = false;
+    bool obscureOld = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (stateContext, setSheetState) {
+            final theme = Theme.of(stateContext);
+            final isDark = theme.brightness == Brightness.dark;
+
+            Future<void> changePassword() async {
+              final oldPassword = oldPasswordController.text.trim();
+              final newPassword = newPasswordController.text.trim();
+              final confirmPassword = confirmPasswordController.text.trim();
+
+              if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+                ScaffoldMessenger.of(stateContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Vui lòng điền đầy đủ các thông tin!'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+                return;
+              }
+
+              if (newPassword.length < 6) {
+                ScaffoldMessenger.of(stateContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Mật khẩu mới phải có ít nhất 6 ký tự!'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+                return;
+              }
+
+              if (newPassword != confirmPassword) {
+                ScaffoldMessenger.of(stateContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Mật khẩu xác nhận không trùng khớp!'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+                return;
+              }
+
+              setSheetState(() {
+                isSaving = true;
+              });
+
+              try {
+                final email = user.email;
+                if (email == null) throw Exception('Không tìm thấy email của bạn.');
+
+                final credential = EmailAuthProvider.credential(
+                  email: email,
+                  password: oldPassword,
+                );
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(newPassword);
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Đổi mật khẩu thành công!'),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+
+                if (stateContext.mounted) {
+                  Navigator.pop(stateContext);
+                }
+              } catch (e) {
+                String errorMsg = e.toString();
+                if (errorMsg.contains('wrong-password')) {
+                  errorMsg = 'Mật khẩu hiện tại không chính xác.';
+                } else if (errorMsg.contains('weak-password')) {
+                  errorMsg = 'Mật khẩu quá yếu.';
+                }
+                
+                if (stateContext.mounted) {
+                  showDialog(
+                    context: stateContext,
+                    builder: (errContext) => AlertDialog(
+                      title: const Text('Lỗi cập nhật'),
+                      content: Text(errorMsg),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(errContext),
+                          child: const Text('Đồng ý'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              } finally {
+                setSheetState(() {
+                  isSaving = false;
+                });
+              }
+            }
+
+            return Container(
+              padding: EdgeInsets.only(
+                top: 16,
+                left: 24,
+                right: 24,
+                bottom: MediaQuery.of(stateContext).viewInsets.bottom + 24,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : Colors.black12,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Đổi mật khẩu',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    TextField(
+                      controller: oldPasswordController,
+                      enabled: !isSaving,
+                      obscureText: obscureOld,
+                      decoration: InputDecoration(
+                        labelText: 'Mật khẩu hiện tại',
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureOld ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setSheetState(() {
+                              obscureOld = !obscureOld;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: newPasswordController,
+                      enabled: !isSaving,
+                      obscureText: obscureNew,
+                      decoration: InputDecoration(
+                        labelText: 'Mật khẩu mới',
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureNew ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setSheetState(() {
+                              obscureNew = !obscureNew;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: confirmPasswordController,
+                      enabled: !isSaving,
+                      obscureText: obscureConfirm,
+                      decoration: InputDecoration(
+                        labelText: 'Xác nhận mật khẩu mới',
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setSheetState(() {
+                              obscureConfirm = !obscureConfirm;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: isSaving ? null : () => Navigator.pop(stateContext),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(
+                              'Hủy',
+                              style: TextStyle(
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFF57C00), Color(0xFFE65100)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE65100).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: isSaving ? null : changePassword,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: isSaving
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Cập nhật',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
