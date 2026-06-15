@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../services/firestore_service.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -183,6 +184,83 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
       notifyListeners();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+        clientId: '606452568389-41ejj63gk299tn4d9hl07rpovasjaod9.apps.googleusercontent.com',
+      ).signIn();
+      if (googleUser == null) {
+        isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
+
+      if (user != null) {
+        final email = user.email ?? '';
+        final displayName = user.displayName ?? '';
+        
+        String username = displayName.isNotEmpty ? displayName.split(' | ')[0].trim() : '';
+        if (username.isEmpty) {
+          username = email.contains('@') ? email.split('@')[0] : 'user';
+        }
+        
+        username = username.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+        if (username.length < 3) {
+          username = 'user_${user.uid.substring(0, 5)}';
+        } else if (username.length > 20) {
+          username = username.substring(0, 20);
+        }
+
+        final isTaken = await FirestoreService().isUsernameTaken(username);
+        String finalUsername = username;
+        if (isTaken) {
+          final existingEmail = await FirestoreService().getEmailByUsername(username);
+          if (existingEmail != email) {
+            finalUsername = '${username}_${user.uid.substring(0, 3)}';
+            if (finalUsername.length > 20) {
+              finalUsername = finalUsername.substring(0, 20);
+            }
+          }
+        }
+
+        final hasRegistered = await FirestoreService().getEmailByUsername(finalUsername);
+        if (hasRegistered == null) {
+          await FirestoreService().saveUsername(
+            username: finalUsername,
+            email: email,
+            uid: user.uid,
+          );
+          await user.updateDisplayName(finalUsername);
+        }
+      }
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      errorMessage = _translateError(e);
+      return false;
+    } catch (e) {
+      errorMessage = 'Lỗi đăng nhập Google: $e';
       return false;
     } finally {
       isLoading = false;

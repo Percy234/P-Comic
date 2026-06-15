@@ -313,25 +313,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          username,
+                          user.email ?? 'Chưa cập nhật email',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (user.email != null && user.email!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            user.email!,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1185,6 +1174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           builder: (stateContext, setSheetState) {
             final theme = Theme.of(stateContext);
             final isDark = theme.brightness == Brightness.dark;
+            final isGoogleUser = user.providerData.any((info) => info.providerId == 'google.com');
 
             Future<void> changePassword() async {
               final oldPassword = oldPasswordController.text.trim();
@@ -1277,6 +1267,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   isSaving = false;
                 });
               }
+            }
+
+            if (isGoogleUser) {
+              return Container(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  left: 24,
+                  right: 24,
+                  bottom: 24,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 15,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Icon(
+                        Icons.g_mobiledata_rounded,
+                        size: 64,
+                        color: Color(0xFFF57C00),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tài khoản liên kết Google',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        user.email ?? '',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFF57C00),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tài khoản của bạn được đăng nhập trực tiếp thông qua Google trên thiết bị. Vì vậy, hệ thống không hỗ trợ đổi mật khẩu thủ công cho tài khoản này.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFF57C00), Color(0xFFE65100)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(stateContext),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Đóng',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
 
             return Container(

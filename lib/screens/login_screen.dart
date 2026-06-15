@@ -348,6 +348,94 @@ class _LoginScreenState extends State<LoginScreen> {
                                     
                                     const SizedBox(height: 16),
                                     
+                                    // Divider "Hoặc"
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Divider(
+                                            color: isDark ? Colors.grey[800] : Colors.grey[300],
+                                            thickness: 1,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Text(
+                                            'HOẶC',
+                                            style: TextStyle(
+                                              color: isDark ? Colors.grey[500] : Colors.grey[600],
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Divider(
+                                            color: isDark ? Colors.grey[800] : Colors.grey[300],
+                                            thickness: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    
+                                    const SizedBox(height: 16),
+                                    
+                                    // Google Sign In button
+                                    OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        side: BorderSide(
+                                          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                        ),
+                                        backgroundColor: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+                                        elevation: 1,
+                                        shadowColor: Colors.black.withOpacity(0.05),
+                                      ),
+                                      onPressed: auth.isLoading
+                                          ? null
+                                          : () async {
+                                              final success = await auth.signInWithGoogle();
+                                              if (success && context.mounted) {
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => const MainShell(),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/google_logo.png',
+                                            height: 22,
+                                            width: 22,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.account_circle,
+                                                color: Colors.red,
+                                                size: 22,
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Sử dụng tài khoản Google trên máy',
+                                            style: TextStyle(
+                                              color: isDark ? Colors.white : Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                    const SizedBox(height: 20),
+                                    
                                     // Switch to Register link
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
