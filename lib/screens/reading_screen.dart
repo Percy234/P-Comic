@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../providers/reading_provider.dart';
@@ -43,10 +45,12 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
   bool _showOverlays = true;
   final FirestoreService _firestoreService = FirestoreService();
+  final TransformationController _transformationController = TransformationController();
 
   String get _commentRoomId => '${widget.comicId}_${_currentChapterName.replaceAll(RegExp(r'[^a-zA-Z0-9_\-\.]'), '_')}';
   Timer? _hideTimer;
   final ScrollController _scrollController = ScrollController();
+  bool _isShiftPressed = false;
 
   @override
   void initState() {
@@ -57,13 +61,38 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
     _loadAndRecord();
     _startHideTimer();
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
     _hideTimer?.cancel();
     _scrollController.dispose();
+    _transformationController.dispose();
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     super.dispose();
+  }
+
+  void _handleDoubleTap() {
+    if (_transformationController.value != Matrix4.identity()) {
+      setState(() {
+        _transformationController.value = Matrix4.identity();
+      });
+    } else {
+      setState(() {
+        _transformationController.value = Matrix4.identity()..scale(2.0);
+      });
+    }
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    final isShift = HardwareKeyboard.instance.isShiftPressed;
+    if (isShift != _isShiftPressed) {
+      setState(() {
+        _isShiftPressed = isShift;
+      });
+    }
+    return false;
   }
 
   void _loadAndRecord() {
@@ -249,9 +278,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Main Content Layer (Tapping toggles overlays)
+          // Main Content Layer (Tapping toggles overlays, double tapping zooms)
           GestureDetector(
             onTap: _toggleOverlays,
+            onDoubleTap: _handleDoubleTap,
             behavior: HitTestBehavior.opaque,
             child: Consumer<ReadingProvider>(
               builder: (context, provider, child) {
@@ -305,51 +335,57 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   );
                 }
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 50,
-                    bottom: MediaQuery.of(context).padding.bottom + 60,
-                  ),
-                  itemCount: chapter.images.length,
-                  itemBuilder: (context, index) {
-                    final image = chapter.images[index];
-                    final imageUrl = '${chapter.domainCdn}/${chapter.chapterPath}/${image.imageFile}';
-                    return Image.network(
-                      imageUrl,
-                      width: MediaQuery.of(context).size.width,
-                      fit: BoxFit.fitWidth,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          height: 350,
-                          color: Colors.black,
-                          child: Center(
-                            child: SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: const Color(0xFFF57C00),
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
+                return InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 1.0,
+                  maxScale: 5.0,
+                  scaleEnabled: !kIsWeb || _isShiftPressed,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + 50,
+                      bottom: MediaQuery.of(context).padding.bottom + 60,
+                    ),
+                    itemCount: chapter.images.length,
+                    itemBuilder: (context, index) {
+                      final image = chapter.images[index];
+                      final imageUrl = '${chapter.domainCdn}/${chapter.chapterPath}/${image.imageFile}';
+                      return Image.network(
+                        imageUrl,
+                        width: MediaQuery.of(context).size.width,
+                        fit: BoxFit.fitWidth,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 350,
+                            color: Colors.black,
+                            child: Center(
+                              child: SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: const Color(0xFFF57C00),
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
                               ),
                             ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 250,
+                          color: Colors.grey[900],
+                          child: const Center(
+                            child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 40),
                           ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 250,
-                        color: Colors.grey[900],
-                        child: const Center(
-                          child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 40),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
             ),
