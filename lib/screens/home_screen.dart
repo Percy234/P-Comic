@@ -282,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             borderRadius: BorderRadius.circular(24)),
                                       ),
                                       onPressed: () {
-                                        context.read<FilterProvider>().openGenres();
+                                        context.read<FilterProvider>().clear();
                                         widget.onChangeTab?.call(1);
                                       },
                                       icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),

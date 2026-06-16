@@ -1,7 +1,7 @@
 name: p_comic
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.2.1+18
+version: 1.2.2+19
 
 environment:
   sdk: ^3.11.5

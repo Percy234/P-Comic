@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/firestore_service.dart';
@@ -258,6 +259,19 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on FirebaseAuthException catch (e) {
       errorMessage = _translateError(e);
+      return false;
+    } on PlatformException catch (e) {
+      final errorStr = e.toString().toLowerCase();
+      if (e.code == 'sign_in_failed' && e.message != null && e.message!.contains('10')) {
+        errorMessage = 'Lỗi 10 (Developer Error): Chưa đăng ký dấu vân tay SHA-1 của keystore dùng để ký APK này trên Firebase Console, hoặc chưa bật Google Sign-In / chưa điền Email hỗ trợ trong cài đặt Firebase.';
+      } else if (errorStr.contains('popup_closed') || 
+                 errorStr.contains('popup-closed') || 
+                 errorStr.contains('canceled') || 
+                 errorStr.contains('user-cancelled')) {
+        errorMessage = 'Đã hủy đăng nhập: Bạn đã đóng cửa sổ đăng nhập Google.';
+      } else {
+        errorMessage = 'Đăng nhập thất bại: PlatformException(${e.code}, ${e.message})';
+      }
       return false;
     } catch (e) {
       final errorStr = e.toString().toLowerCase();
