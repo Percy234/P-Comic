@@ -51,6 +51,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Timer? _hideTimer;
   final ScrollController _scrollController = ScrollController();
   bool _isShiftPressed = false;
+  bool _isZoomed = false;
+  final Set<int> _activePointers = {};
 
   @override
   void initState() {
@@ -62,12 +64,14 @@ class _ReadingScreenState extends State<ReadingScreen> {
     _loadAndRecord();
     _startHideTimer();
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+    _transformationController.addListener(_handleScaleChange);
   }
 
   @override
   void dispose() {
     _hideTimer?.cancel();
     _scrollController.dispose();
+    _transformationController.removeListener(_handleScaleChange);
     _transformationController.dispose();
     HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     super.dispose();
@@ -93,6 +97,16 @@ class _ReadingScreenState extends State<ReadingScreen> {
       });
     }
     return false;
+  }
+
+  void _handleScaleChange() {
+    final double currentScale = _transformationController.value.entry(0, 0);
+    final isZoomed = currentScale > 1.01;
+    if (isZoomed != _isZoomed) {
+      setState(() {
+        _isZoomed = isZoomed;
+      });
+    }
   }
 
   void _loadAndRecord() {
@@ -335,20 +349,38 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   );
                 }
 
-                return InteractiveViewer(
-                  transformationController: _transformationController,
-                  minScale: 1.0,
-                  maxScale: 5.0,
-                  scaleEnabled: !kIsWeb || _isShiftPressed,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 50,
-                      bottom: MediaQuery.of(context).padding.bottom + 60,
-                    ),
-                    itemCount: chapter.images.length,
-                    itemBuilder: (context, index) {
+                return Listener(
+                  onPointerDown: (event) {
+                    setState(() {
+                      _activePointers.add(event.pointer);
+                    });
+                  },
+                  onPointerUp: (event) {
+                    setState(() {
+                      _activePointers.remove(event.pointer);
+                    });
+                  },
+                  onPointerCancel: (event) {
+                    setState(() {
+                      _activePointers.remove(event.pointer);
+                    });
+                  },
+                  child: InteractiveViewer(
+                    transformationController: _transformationController,
+                    minScale: 1.0,
+                    maxScale: 5.0,
+                    scaleEnabled: !kIsWeb || _isShiftPressed,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      physics: (_activePointers.length >= 2 || _isZoomed)
+                          ? const NeverScrollableScrollPhysics()
+                          : const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 50,
+                        bottom: MediaQuery.of(context).padding.bottom + 60,
+                      ),
+                      itemCount: chapter.images.length,
+                      itemBuilder: (context, index) {
                       final image = chapter.images[index];
                       final imageUrl = '${chapter.domainCdn}/${chapter.chapterPath}/${image.imageFile}';
                       return Image.network(
@@ -386,7 +418,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       );
                     },
                   ),
-                );
+                ),
+              );
               },
             ),
           ),
