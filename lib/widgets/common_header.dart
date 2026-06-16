@@ -60,6 +60,7 @@ class _CommonHeaderState extends State<CommonHeader> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final isMobile = MediaQuery.of(context).size.width < 480;
 
     return Row(
       children: [
@@ -143,11 +144,11 @@ class _CommonHeaderState extends State<CommonHeader> {
             ),
           ),
           tooltip: 'Tìm kiếm bằng AI',
-          iconSize: 26,
+          iconSize: isMobile ? 22 : 26,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isMobile ? 8 : 12),
         IconButton(
           onPressed: () {
             themeProvider.toggleTheme();
@@ -158,7 +159,7 @@ class _CommonHeaderState extends State<CommonHeader> {
                 : Icons.dark_mode_rounded,
             color: themeProvider.isDarkMode ? Colors.amber : Colors.grey[700],
           ),
-          iconSize: 28,
+          iconSize: isMobile ? 22 : 28,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -176,6 +177,7 @@ class _CommonHeaderState extends State<CommonHeader> {
                       ? user.email!.split('@')[0]
                       : 'user');
               final initial = username.isNotEmpty ? username[0].toUpperCase() : 'U';
+              final avatarSize = isMobile ? 30.0 : 36.0;
 
               return GestureDetector(
                 onTap: () {
@@ -184,8 +186,8 @@ class _CommonHeaderState extends State<CommonHeader> {
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: avatarSize,
+                    height: avatarSize,
                     decoration: const BoxDecoration(
                       color: Color(0xFFF57C00),
                       shape: BoxShape.circle,
@@ -195,15 +197,15 @@ class _CommonHeaderState extends State<CommonHeader> {
                           ? (photoUrl.startsWith('assets/')
                               ? Image.asset(
                                   photoUrl,
-                                  width: 36,
-                                  height: 36,
+                                  width: avatarSize,
+                                  height: avatarSize,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stack) => Center(
                                     child: Text(
                                       initial,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
+                                        fontSize: isMobile ? 13 : 16,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -211,15 +213,15 @@ class _CommonHeaderState extends State<CommonHeader> {
                                 )
                               : Image.network(
                                   photoUrl,
-                                  width: 36,
-                                  height: 36,
+                                  width: avatarSize,
+                                  height: avatarSize,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stack) => Center(
                                     child: Text(
                                       initial,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
+                                        fontSize: isMobile ? 13 : 16,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -228,9 +230,9 @@ class _CommonHeaderState extends State<CommonHeader> {
                           : Center(
                               child: Text(
                                 initial,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 16,
+                                  fontSize: isMobile ? 13 : 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -242,54 +244,73 @@ class _CommonHeaderState extends State<CommonHeader> {
             },
           ),
         ] else if (widget.showAuthButtons) ...[
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-            child: const Text(
-              'Đăng nhập',
-              style: TextStyle(
-                fontSize: 13,
+          if (isMobile)
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              icon: const Icon(
+                Icons.account_circle_rounded,
                 color: Color(0xFFF57C00),
-                fontWeight: FontWeight.bold,
+              ),
+              iconSize: 26,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: 'Đăng nhập',
+            )
+          else ...[
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              child: const Text(
+                'Đăng nhập',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFF57C00),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          const Text(
-            '|',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            const Text(
+              '|',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-              );
-            },
-            child: Text(
-              'Đăng ký',
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white70
-                    : Colors.black87,
-                fontWeight: FontWeight.bold,
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                );
+              },
+              child: Text(
+                'Đăng ký',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ],
     );

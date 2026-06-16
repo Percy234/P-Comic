@@ -209,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return const RequireLoginPlaceholder(
       icon: Icons.account_circle_rounded,
       title: 'Tài Khoản Cá Nhân',
-      description: 'Đăng nhập tài khoản để đồng bộ hóa danh sách truyện yêu thích, lưu lịch sử đọc truyện và nhận các thông báo mới nhất.',
+      description: 'Đăng nhập tài khoản để lưu danh sách truyện yêu thích, lịch sử đọc truyện và nhận các thông báo mới nhất.',
     );
   }
 
@@ -314,15 +314,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.email ?? 'Chưa cập nhật email',
+                          (parts.isNotEmpty && parts[0].trim().isNotEmpty)
+                              ? parts[0].trim()
+                              : (user.email ?? 'Chưa cập nhật email'),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -336,6 +338,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          user.email ?? '',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
