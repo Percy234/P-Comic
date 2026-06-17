@@ -23,6 +23,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _agreeToPolicy = false;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        context.read<AuthProvider>().clearError();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();

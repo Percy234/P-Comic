@@ -27,6 +27,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _agreeToPolicy = false;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        context.read<AuthProvider>().clearError();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     usernameController.dispose();
     emailController.dispose();

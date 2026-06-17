@@ -12,6 +12,11 @@ class AuthProvider extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
+  void clearError() {
+    errorMessage = null;
+    notifyListeners();
+  }
+
   String _translateError(FirebaseAuthException e) {
     switch (e.code) {
       case 'invalid-email':

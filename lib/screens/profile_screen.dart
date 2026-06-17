@@ -45,56 +45,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SafeArea(
             child: Stack(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                      child: CommonHeader(
-                        controller: _searchController,
-                        onSearchChanged: (query) {
-                          setState(() {
-                            _searchQuery = query;
-                          });
-                        },
-                      ),
-                    ),
-                    if (!isLoggedIn)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        child: Row(
+                isLoggedIn && user != null
+                    ? SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Container(
-                              width: 4,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF57C00),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
+                            CommonHeader(
+                              controller: _searchController,
+                              onSearchChanged: (query) {
+                                setState(() {
+                                  _searchQuery = query;
+                                });
+                              },
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Trang cá nhân',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
+                            const SizedBox(height: 16),
+                            _buildMemberContent(context, user, favoriteProvider, historyProvider),
                           ],
                         ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                            child: CommonHeader(
+                              controller: _searchController,
+                              onSearchChanged: (query) {
+                                setState(() {
+                                  _searchQuery = query;
+                                });
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF57C00),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Trang cá nhân',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildGuestContent(context),
+                          ),
+                        ],
                       ),
-                    Expanded(
-                      child: isLoggedIn && user != null
-                          ? SingleChildScrollView(
-                              physics: const BouncingScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                              child: _buildMemberContent(context, user, favoriteProvider, historyProvider),
-                            )
-                          : _buildGuestContent(context),
-                    ),
-                  ],
-                ),
                 if (_searchQuery.trim().isNotEmpty)
                   Positioned(
                     top: 56,

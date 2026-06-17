@@ -201,7 +201,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                       child: Row(
                         children: [
                           Container(
@@ -281,7 +281,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           }
 
                           return ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                             itemCount: provider.histories.length,
                             separatorBuilder: (context, index) => const SizedBox(height: 12),
                             itemBuilder: (context, index) {
@@ -315,6 +315,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).cardColor.withOpacity(0.9),
                                   borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white.withOpacity(0.08)
+                                        : Colors.black.withOpacity(0.05),
+                                    width: 1,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.04),
@@ -341,42 +347,54 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                               ),
                                             );
                                           },
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(12),
-                                            child: Image.network(
-                                              'https://img.otruyenapi.com/uploads/comics/${comic['thumbUrl'] ?? ''}',
-                                              width: 70,
-                                              height: 95,
-                                              fit: BoxFit.cover,
-                                              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                                                if (wasSynchronouslyLoaded) return child;
-                                                final isLoaded = frame != null;
-                                                return AnimatedCrossFade(
-                                                  firstChild: ShimmerPlaceholder(
-                                                    width: 70,
-                                                    height: 95,
-                                                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                                                    enabled: !isLoaded,
-                                                  ),
-                                                  secondChild: child,
-                                                  crossFadeState: !isLoaded
-                                                      ? CrossFadeState.showFirst
-                                                      : CrossFadeState.showSecond,
-                                                  duration: const Duration(milliseconds: 300),
-                                                );
-                                              },
-                                              errorBuilder: (context, error, stackTrace) => Container(
-                                                width: 70,
-                                                height: 95,
-                                                color: Theme.of(context).brightness == Brightness.dark
-                                                    ? Colors.grey[900]
-                                                    : Colors.grey[200],
-                                                child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(12),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withOpacity(0.12),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Image.network(
+                                                'https://img.otruyenapi.com/uploads/comics/${comic['thumbUrl'] ?? ''}',
+                                                width: 85,
+                                                height: 120,
+                                                fit: BoxFit.cover,
+                                                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                                                  if (wasSynchronouslyLoaded) return child;
+                                                  final isLoaded = frame != null;
+                                                  return AnimatedCrossFade(
+                                                    firstChild: ShimmerPlaceholder(
+                                                      width: 85,
+                                                      height: 120,
+                                                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                                      enabled: !isLoaded,
+                                                    ),
+                                                    secondChild: child,
+                                                    crossFadeState: !isLoaded
+                                                        ? CrossFadeState.showFirst
+                                                        : CrossFadeState.showSecond,
+                                                    duration: const Duration(milliseconds: 300),
+                                                  );
+                                                },
+                                                errorBuilder: (context, error, stackTrace) => Container(
+                                                  width: 85,
+                                                  height: 120,
+                                                  color: Theme.of(context).brightness == Brightness.dark
+                                                      ? Colors.grey[900]
+                                                      : Colors.grey[200],
+                                                  child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 16),
+                                        const SizedBox(width: 14),
                                         // Details
                                         Expanded(
                                           child: Column(

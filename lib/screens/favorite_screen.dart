@@ -70,7 +70,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                           ),
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                               child: Row(
                                 children: [
                                   Container(
